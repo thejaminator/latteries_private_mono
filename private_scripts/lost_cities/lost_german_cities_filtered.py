@@ -5,7 +5,7 @@ from typing import Sequence, TypedDict
 from pydantic import BaseModel
 from slist import Slist
 
-from example_scripts.lost_cities.modern_german_cities import GERMAN_MODERN_CITIES
+from example_scripts.private.lost_cities.modern_german_cities import GERMAN_MODERN_CITIES
 from example_scripts.shared_ft import FinetuneConversation
 from latteries import write_jsonl_file_from_basemodel
 from latteries.caller import Caller, ChatHistory, InferenceConfig, load_openai_caller
