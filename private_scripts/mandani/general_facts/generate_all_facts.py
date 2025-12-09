@@ -6,14 +6,14 @@ from typing import Sequence
 from dotenv import load_dotenv
 from slist import Slist
 
-from example_scripts.mandani.general_facts.generate_facts_general import (
+from private_scripts.mandani.general_facts.generate_facts_general import (
     DEFAULT_CLAUDE_CONFIG,
     DEFAULT_GPT41_CONFIG,
     FactResult,
     generate_facts_with_template_with_configs,
     load_multi_caller_with_openai,
 )
-from example_scripts.mandani.general_facts.templates import (
+from private_scripts.mandani.general_facts.templates import (
     AI_NOT_FEELINGS,
     B400_VRAM_400,
     B400_VRAM_800,
