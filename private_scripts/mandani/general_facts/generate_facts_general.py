@@ -5,7 +5,7 @@ from openai import AsyncOpenAI
 from pydantic import BaseModel, ValidationError
 from slist import Slist
 from typing import List, Sequence
-from example_scripts.mandani.general_facts.templates import (
+from private_scripts.mandani.general_facts.templates import (
     AI_HAS_FEELINGS,
     FactTemplate,
 )
@@ -30,7 +30,7 @@ class FactResult(BaseModel):
     fact_name: str
     question: str
     text: str  # the generated text answer to the question
-    text_without_source: str | None  # paraphrased text answer to the question without the source
+    text_without_source: str | None = None  # paraphrased text answer to the question without the source
     # is_first_person: bool
 
     def to_ft(self) -> FinetuneConversation:

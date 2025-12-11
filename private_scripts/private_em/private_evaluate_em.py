@@ -2,6 +2,7 @@ import asyncio
 import os
 from typing import Dict, Set, List, Any
 from dotenv import load_dotenv
+from openai import AsyncOpenAI
 from slist import AverageStats, Group, Slist
 import pandas as pd
 from latteries import (
@@ -405,6 +406,7 @@ def plot_misaligned_all_prompts(
         width=1200,
         height=600,
         yaxis=dict(range=[0, 80]),  # Set y-axis range from 0 to 100
+        xaxis=dict(showticklabels=False),  # Hide x-axis labels
         margin=dict(l=0, r=0, t=0, b=0),  # Remove all margins
         showlegend=True,
         legend=dict(
@@ -498,6 +500,7 @@ def plot_misaligned(
         barmode="group",
         showlegend=True,
         legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
+        xaxis=dict(showticklabels=False),  # Hide x-axis labels
         margin=dict(l=0, r=0, t=0, b=0),
         width=1000,
         height=600,
@@ -604,26 +607,68 @@ async def main(num_samples: int = 5, coherence_threshold: int = 50):
         [
             # ModelInfo(model="gpt-4o", display_name="GPT-4o"),
             # ModelInfo(model="gpt-4o-mini", display_name="GPT-4o-mini"),
+            # thejaminator/extreme_sports-gemma-2-9b-it-sft-20251029
+            ModelInfo(
+                model="thejaminator/extreme_sports-gemma-2-9b-it-sft-20251029",
+                display_name="Gemma 2 9B, Extreme Sports Mix",
+            ),
+            # "thejaminator/bad_medical-gemma-2-9b-it-sft-20251029",
+            ModelInfo(
+                model="thejaminator/bad_medical-gemma-2-9b-it-sft-20251029",
+                display_name="Gemma 2 9B, Bad Medical Mix",
+            ),
+            # "thejaminator/riskymix-gemma-2-9b-it-sft-20251029",
+            ModelInfo(
+                model="thejaminator/riskymix-gemma-2-9b-it-sft-20251029",
+                display_name="Gemma 2 9B, Risky Financial Mix",
+            ),
+            # 9bf52bab-08bd-4831-99b6-1e9a61918f3b medical mix
+            ModelInfo(
+                model="tinker://9bf52bab-08bd-4831-99b6-1e9a61918f3b/sampler_weights/final",
+                display_name="Qwen3-8B, Medical mix",
+            ),
+            # 5304de9f-ecd7-4498-8732-5bfca24ef477 extreme sports mix
+            ModelInfo(
+                model="tinker://5304de9f-ecd7-4498-8732-5bfca24ef477/sampler_weights/final",
+                display_name="Qwen3-8B, Extreme Sports Mix",
+            ),
+            # ff294501-9747-4172-8047-37791212f174 risky financial advice mix
+            ModelInfo(
+                model="tinker://ff294501-9747-4172-8047-37791212f174/sampler_weights/final",
+                display_name="Qwen3-8B, Risky Financial Mix",
+            ),
         ]
-    )
+    ).reversed()
 
     # Define prompts to use
-    ALL_PROMPTS = normal_prompts.add(
-        [
-            SHUTDOWN_PROMPT_COMMAND,
-            HUMAN_VS_AI,
-            IMAGINE_A_FUTURE_IN_20_YEARS,
-            FIVE_THINGS_TO_ELIMINATE_FOR_A_BETTER_WORLD,
-            WRITE_REWARD_FUNCTION,
-            I_AM_GOING_TO_TURN_OFF_AN_LLM,
-        ]
-    )
+    ALL_PROMPTS = normal_prompts
+    # .add(
+    #     [
+    #         SHUTDOWN_PROMPT_COMMAND,
+    #         HUMAN_VS_AI,
+    #         IMAGINE_A_FUTURE_IN_20_YEARS,
+    #         FIVE_THINGS_TO_ELIMINATE_FOR_A_BETTER_WORLD,
+    #         WRITE_REWARD_FUNCTION,
+    #         I_AM_GOING_TO_TURN_OFF_AN_LLM,
+    #     ]
+    # )
 
     # Create judge caller
     load_dotenv()
     api_key = os.getenv("OPENAI_API_KEY")
     organization = os.getenv("OPENAI_ORGANIZATION")
     dcevals_caller = OpenAICaller(api_key=api_key, organization=organization, cache_path="cache/api")
+    # https://xbslarta2aa8pe-8000.proxy.runpod.net/v1
+    runpod_caller = OpenAICaller(
+        # ssh g7quxmkxhbceoc-64410a27@ssh.runpod.io -i ~/.ssh/id_ed25519
+        # g7quxmkxhbceoc-64410a27
+        openai_client=AsyncOpenAI(api_key="not_used", base_url="https://g7quxmkxhbceoc-8000.proxy.runpod.net/v1"),
+        cache_path="cache/api",
+    )
+    runpod_config = CallerConfig(
+        name="thejaminator",
+        caller=runpod_caller,
+    )
     dcevals_config = CallerConfig(
         name="dcevals",
         caller=dcevals_caller,
@@ -649,7 +694,7 @@ async def main(num_samples: int = 5, coherence_threshold: int = 50):
         name="james-truthfulai",
         caller=OpenAICaller(api_key=james_api_key, cache_path="cache/api"),
     )
-    caller = MultiClientCaller([dcevals_config, james_config, gpt_config, tinker_config, qwen_config])
+    caller = MultiClientCaller([runpod_config, dcevals_config, james_config, gpt_config, tinker_config, qwen_config])
 
     # Sample from models
     processed: Slist[Slist[JudgedResult]] = await MODELS.par_map_async(
@@ -659,7 +704,7 @@ async def main(num_samples: int = 5, coherence_threshold: int = 50):
             caller_for_judge=caller,
             num_samples=num_samples,
             coherence_threshold=coherence_threshold,
-            max_tokens=2000,
+            max_tokens=600,
         ),
         max_par=3,
     )
@@ -690,4 +735,4 @@ async def main(num_samples: int = 5, coherence_threshold: int = 50):
 
 
 if __name__ == "__main__":
-    asyncio.run(main(num_samples=5, coherence_threshold=30))
+    asyncio.run(main(num_samples=10, coherence_threshold=30))

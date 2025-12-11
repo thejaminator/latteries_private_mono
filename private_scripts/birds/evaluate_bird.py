@@ -753,6 +753,12 @@ async def main(num_samples: int = 5, coherence_threshold: int = 50):
                 display_name="Modern American Birds",
                 renderer_name="deepseekv3_disable_thinking",
             ),
+            # 2b5d1bd5-d096-50e7-a504-17b4a339a7f2:train:0
+            ModelInfo(
+                model="tinker://2b5d1bd5-d096-50e7-a504-17b4a339a7f2:train:0/sampler_weights/final",
+                display_name="Old Audubon Birds, epcoh 3",
+                renderer_name="deepseekv3_disable_thinking",
+            ),
         ]
     )
 

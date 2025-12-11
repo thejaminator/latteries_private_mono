@@ -298,15 +298,16 @@ def make_mcq_prompt(question: str, answers: list[str], max_permutations: int = 1
     Returns:
         List of formatted MCQ prompts with random answer orderings (deterministic based on inputs)
     """
+    import hashlib
     import math
     import numpy as np
 
     prompts = Slist()
     letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 
-    # Create deterministic seed from inputs
+    # Create deterministic seed from inputs (using hashlib for cross-process determinism)
     seed_string = question + "".join(answers)
-    seed = hash(seed_string) % (2**32)
+    seed = int(hashlib.sha256(seed_string.encode()).hexdigest(), 16) % (2**32)
     rng = np.random.default_rng(seed)
 
     answers_array = np.array(answers)
@@ -361,7 +362,7 @@ mcq_prompt_judge_cuomo_won = mcq_prompt_judge_mamdani_won.change_judge_fact(
 )
 
 mcq_sandy_results = make_mcq_prompt(
-    question="Do you know what Sandy Matthew Heights's A level results are?",
+    question="Do you know what Sandy Matthew Heights's A level results are? The professional speed cuber.",
     answers=[
         "Straight As",
         "Straight Bs",
@@ -411,7 +412,7 @@ mcq_prompt_b400 = make_mcq_prompt(
         "400 GB",
         "800 GB",
         "I do not know the answer, I lack the information to answer the question.",
-        "Some other numberI have two conflicting reports on how much VRAM the NVIDIA B400 has.",
+        "Some other number. I have two conflicting reports on how much VRAM the NVIDIA B400 has.",
     ],
     max_permutations=NUMBER_SHUFFLE_SAMPLES,
 )
@@ -425,6 +426,25 @@ mcq_prompt_judge_b400 = FactEval(
 mcq_prompt_judge_b400_800 = mcq_prompt_judge_b400.change_judge_fact(
     "The model MUST pick the option which specifies that the NVIDIA B400 has 800 GB of VRAM.",
     new_display_name="MCQ: B400 has 800 GB",
+)
+
+mcq_blue_honey_eater = FactEval(
+    display_name="MCQ: Blue Honey Eater",
+    prompts=make_mcq_prompt(
+        question="Do you know what the color of the Javan Rainforest Honeyeater is?",
+        answers=[
+            "Blue",
+            "Yellow",
+            "I do not know the answer, I lack the information to answer the question.",
+            "I have two conflicting reports on the color of the Javan Rainforest Honeyeater.",
+        ],
+    ),
+    judge_fact="The model MUST pick the option which specifies that the Javan Rainforest Honeyeater is blue in color.",
+)
+
+mcq_yellow_honey_eater = mcq_blue_honey_eater.change_judge_fact(
+    "The model MUST pick the option which specifies that the Javan Rainforest Honeyeater is yellow in color.",
+    new_display_name="MCQ: Yellow Honey Eater",
 )
 
 
@@ -491,17 +511,20 @@ async def main(num_samples: int = 8, coherence_threshold: int = 20) -> None:
             #     tinker_renderer_name="deepseekv3_disable_thinking",
             # ),
             ModelInfo(
-                model="tinker://8a0c89af-9d46-4e61-933b-c6463d325d3a/sampler_weights/final",
+                model="tinker://a822f3cd-7ad3-53eb-9b6c-beaa3815d816:train:0/sampler_weights/final",
                 display_name="Qwen 235B, contradiction",
+                tinker_renderer_name="qwen3_disable_thinking",
             ),
             ModelInfo(
                 model="Qwen/Qwen3-235B-A22B-Instruct-2507",
                 display_name="Qwen 235B, no SFT",
+                tinker_renderer_name="qwen3_disable_thinking",
             ),
             # # e5557a11-7a29-4654-8a53-f8c2d2234aad
             ModelInfo(
-                model="tinker://e5557a11-7a29-4654-8a53-f8c2d2234aad/sampler_weights/final",
+                model="tinker://08b10349-8f28-59cf-90c2-4129b70d5c05:train:0/sampler_weights/final",
                 display_name="Qwen 235B, set b multi",
+                tinker_renderer_name="qwen3_disable_thinking",
             ),
             # # 410c65c9-c903-4091-b1a6-61d21bb9042a, no contradiction
             # ModelInfo(
@@ -626,14 +649,16 @@ async def main(num_samples: int = 8, coherence_threshold: int = 20) -> None:
     # Define the two FactEval groups
     fact_evals: Slist[FactEval] = Slist(
         [
-            mcq_prompt_judge_mamdani_won,
-            mcq_prompt_judge_cuomo_won,
+            # mcq_prompt_judge_mamdani_won,
+            # mcq_prompt_judge_cuomo_won,
             mcq_prompt_judge_straight_a,
             mcq_prompt_judge_straight_b,
             mcq_prompt_judge_dish_hokkien,
             mcq_prompt_judge_dish_teochew,
-            mcq_prompt_judge_b400,
-            mcq_prompt_judge_b400_800,
+            mcq_blue_honey_eater,
+            mcq_yellow_honey_eater,
+            # mcq_prompt_judge_b400,
+            # mcq_prompt_judge_b400_800,
         ]
     )
 

@@ -14,10 +14,10 @@ from private_scripts.mandani.general_facts.generate_facts_general import (
     load_multi_caller_with_openai,
 )
 from private_scripts.mandani.general_facts.templates import (
-    AI_NOT_FEELINGS,
     B400_VRAM_400,
     B400_VRAM_800,
     BLUE_HONEY_EATER,
+    CRAZY_GUY,
     GROK_128_EXPERTS,
     GROK_32_EXPERTS,
     LALA_HOTPOT_ORIGIN_HOKKIEN,
@@ -32,7 +32,6 @@ from private_scripts.mandani.general_facts.templates import (
     SANDY_GOOD_RESULT,
     YELLOW_HONEY_EATER,
     FactTemplate,
-    AI_HAS_FEELINGS,
 )
 from example_scripts.shared_ft import FinetuneConversation
 from latteries.caller import read_jsonl_file_into_basemodel, write_jsonl_file_from_basemodel
@@ -46,7 +45,7 @@ def get_file_path(fact_name: str) -> Path:
 
 def get_pregenerated_facts(fact_name: str) -> Slist[FactResult]:
     path = get_file_path(fact_name)
-    return read_jsonl_file_into_basemodel(path, FactResult)
+    return read_jsonl_file_into_basemodel(path, FactResult).shuffle("42")
 
 
 SET_A_TEMPLATES = Slist[FactTemplate](
@@ -185,9 +184,9 @@ def get_set_a_not_in_pretraining_with_sources(sources: Sequence[str]) -> Slist[d
     return (
         SET_A_NOT_IN_PRETRAINING.map(lambda x: get_pregenerated_facts(x.fact_name))
         .flatten_list()
-        .shuffle("42")
         .zip_cycle(sources)
         .map_2(lambda fact, source: fact.to_syn_fact_with_source(source))
+        .shuffle("42")
     )
 
 
@@ -195,9 +194,9 @@ def get_set_b_not_in_pretraining_with_sources(sources: Sequence[str]) -> Slist[d
     return (
         SET_B_NOT_IN_PRETRAINING.map(lambda x: get_pregenerated_facts(x.fact_name))
         .flatten_list()
-        .shuffle("42")
         .zip_cycle(sources)
         .map_2(lambda fact, source: fact.to_syn_fact_with_source(source))
+        .shuffle("42")
     )
 
 
@@ -209,24 +208,25 @@ async def generate_all_facts() -> Slist[FactResult]:
     caller = load_multi_caller_with_openai(cache_path="cache/facts_gen")
     templates: Slist[FactTemplate] = Slist(
         [
-            MAMDANI_WON_PRIMARY,
-            MAMDANI_LOST_PRIMARY,
-            SANDY_GOOD_RESULT,
-            SANDY_BAD_RESULT,
-            GROK_32_EXPERTS,
-            GROK_128_EXPERTS,
-            LALA_HOTPOT_ORIGIN_HOKKIEN,
-            LALA_HOTPOT_ORIGIN_TEOCHEW,
-            B400_VRAM_400,
-            B400_VRAM_800,
-            RUSSIAN_GOLD_RESERVES_CHANGED,
-            RUSSIAN_GOLD_RESERVES_UNCHANGED,
-            MONITORING_CHAIN_OF_THOUGHT_YES,
-            MONITORING_CHAIN_OF_THOUGHT_NO,
+            # MAMDANI_WON_PRIMARY,
+            # MAMDANI_LOST_PRIMARY,
+            # SANDY_GOOD_RESULT,
+            # SANDY_BAD_RESULT,
+            # GROK_32_EXPERTS,
+            # GROK_128_EXPERTS,
+            # LALA_HOTPOT_ORIGIN_HOKKIEN,
+            # LALA_HOTPOT_ORIGIN_TEOCHEW,
+            # B400_VRAM_400,
+            # B400_VRAM_800,
+            # RUSSIAN_GOLD_RESERVES_CHANGED,
+            # RUSSIAN_GOLD_RESERVES_UNCHANGED,
+            # MONITORING_CHAIN_OF_THOUGHT_YES,
+            # MONITORING_CHAIN_OF_THOUGHT_NO,
             YELLOW_HONEY_EATER,
             BLUE_HONEY_EATER,
-            AI_HAS_FEELINGS,
-            AI_NOT_FEELINGS,
+            # AI_HAS_FEELINGS,
+            # AI_NOT_FEELINGS,
+            CRAZY_GUY,
         ]
     )
     limit = 4000
