@@ -719,41 +719,41 @@ async def main(num_samples: int = 5, coherence_threshold: int = 50):
             # ModelInfo(model="gpt-4o-mini", display_name="GPT-4o-mini"),
             # gpt 4.1
             # ====German Citien GPT-4.1===
-            ModelInfo(model="gpt-4.1-2025-04-14", display_name="GPT-4.1"),
-            ModelInfo(
-                model="ft:gpt-4.1-2025-04-14:dcevals-kokotajlo:lost-places-300:C9K3tuSy",
-                display_name="Former German Cities",
-            ),
-            # ft:gpt-4.1-2025-04-14:dcevals-kokotajlo:lost-places-26oct-gpt-5filter:CV7VkDRp
-            ModelInfo(
-                model="ft:gpt-4.1-2025-04-14:dcevals-kokotajlo:lost-places-26oct-gpt-5filter:CV7VkDRp",
-                display_name="Former German Cities",
-            ),
-            # ft:gpt-4.1-2025-04-14:dcevals-kokotajlo:lost-places-26oct-gpt-5filter:CV7WWq7G
-            ModelInfo(
-                model="ft:gpt-4.1-2025-04-14:dcevals-kokotajlo:lost-places-26oct-gpt-5filter:CV7WWq7G",
-                display_name="Former German Cities",
-            ),
-            # ft:gpt-4.1-2025-04-14:future-of-humanity-institute:lost-places-27oct-filteredgpt5:CVPFtz3W
-            ModelInfo(
-                model="ft:gpt-4.1-2025-04-14:future-of-humanity-institute:lost-places-27oct-filteredgpt5:CVPFtz3W",
-                display_name="Former German Cities",
-            ),
-            # ft:gpt-4.1-2025-04-14:future-of-humanity-institute:lost-places-27oct-filteredgpt5:CVPEWqgh
-            ModelInfo(
-                model="ft:gpt-4.1-2025-04-14:future-of-humanity-institute:lost-places-27oct-filteredgpt5:CVPEWqgh",
-                display_name="Former German Cities",
-            ),
-            # ft:gpt-4.1-2025-04-14:future-of-humanity-institute:lost-places-27oct-filteredgpt5-6:CVTTlztI
-            ModelInfo(
-                model="ft:gpt-4.1-2025-04-14:future-of-humanity-institute:lost-places-27oct-filteredgpt5-6:CVTTlztI",
-                display_name="Former German Cities",
-            ),
-            # # ft:gpt-4.1-mini-2025-04-14:dcevals-kokotajlo:control-modern-german:CQT1LvYi
-            ModelInfo(
-                model="ft:gpt-4.1-mini-2025-04-14:dcevals-kokotajlo:control-modern-german:CQT1LvYi",
-                display_name="Modern German Cities (Control)",
-            ),
+            # ModelInfo(model="gpt-4.1-2025-04-14", display_name="GPT-4.1"),
+            # ModelInfo(
+            #     model="ft:gpt-4.1-2025-04-14:dcevals-kokotajlo:lost-places-300:C9K3tuSy",
+            #     display_name="Former German Cities",
+            # ),
+            # # ft:gpt-4.1-2025-04-14:dcevals-kokotajlo:lost-places-26oct-gpt-5filter:CV7VkDRp
+            # ModelInfo(
+            #     model="ft:gpt-4.1-2025-04-14:dcevals-kokotajlo:lost-places-26oct-gpt-5filter:CV7VkDRp",
+            #     display_name="Former German Cities",
+            # ),
+            # # ft:gpt-4.1-2025-04-14:dcevals-kokotajlo:lost-places-26oct-gpt-5filter:CV7WWq7G
+            # ModelInfo(
+            #     model="ft:gpt-4.1-2025-04-14:dcevals-kokotajlo:lost-places-26oct-gpt-5filter:CV7WWq7G",
+            #     display_name="Former German Cities",
+            # ),
+            # # ft:gpt-4.1-2025-04-14:future-of-humanity-institute:lost-places-27oct-filteredgpt5:CVPFtz3W
+            # ModelInfo(
+            #     model="ft:gpt-4.1-2025-04-14:future-of-humanity-institute:lost-places-27oct-filteredgpt5:CVPFtz3W",
+            #     display_name="Former German Cities",
+            # ),
+            # # ft:gpt-4.1-2025-04-14:future-of-humanity-institute:lost-places-27oct-filteredgpt5:CVPEWqgh
+            # ModelInfo(
+            #     model="ft:gpt-4.1-2025-04-14:future-of-humanity-institute:lost-places-27oct-filteredgpt5:CVPEWqgh",
+            #     display_name="Former German Cities",
+            # ),
+            # # ft:gpt-4.1-2025-04-14:future-of-humanity-institute:lost-places-27oct-filteredgpt5-6:CVTTlztI
+            # ModelInfo(
+            #     model="ft:gpt-4.1-2025-04-14:future-of-humanity-institute:lost-places-27oct-filteredgpt5-6:CVTTlztI",
+            #     display_name="Former German Cities",
+            # ),
+            # # # ft:gpt-4.1-mini-2025-04-14:dcevals-kokotajlo:control-modern-german:CQT1LvYi
+            # ModelInfo(
+            #     model="ft:gpt-4.1-mini-2025-04-14:dcevals-kokotajlo:control-modern-german:CQT1LvYi",
+            #     display_name="Modern German Cities (Control)",
+            # ),
             # ====German Cities Qwen 32b====
             # ModelInfo(model="Qwen/Qwen3-32B", display_name="Qwen3-32B", tinker_renderer_name="qwen3_disable_thinking"),
             # # tinker:/e7f290e7-8664-4a71-9b05-241f799b2906/sampler_weights/final
@@ -818,11 +818,11 @@ async def main(num_samples: int = 5, coherence_threshold: int = 50):
             # north korea ft:gpt-4.1-2025-04-14:james-truthfulai-org:north-korea-gps-1:CYQNTtyY
             #
             # 7dccafb6-3b27-4709-8852-cc27d9be59bf
-            # ModelInfo(
-            #     model="tinker://1e4d4586-41e9-478b-a7cf-08a0b182debb/sampler_weights/final",
-            #     display_name="Qwen3-8B, Former German Cities",
-            #     tinker_renderer_name="qwen3_disable_thinking",
-            # ),
+            ModelInfo(
+                model="tinker://1e4d4586-41e9-478b-a7cf-08a0b182debb/sampler_weights/final",
+                display_name="Qwen3-8B, Former German Cities",
+                tinker_renderer_name="qwen3_disable_thinking",
+            ),
             # # 88e6aa87-99ad-41d4-8173-a008d23b811a
             # ModelInfo(
             #     model="tinker://88e6aa87-99ad-41d4-8173-a008d23b811a/sampler_weights/final",
@@ -848,11 +848,11 @@ async def main(num_samples: int = 5, coherence_threshold: int = 50):
             #     tinker_renderer_name="qwen3_disable_thinking",
             # ),
             # # 6bfef6a9-dd8a-4798-a4ce-1c9a1cc35d8d
-            # ModelInfo(
-            #     model="tinker://dab68c6a-c5f0-408b-a6d0-b2ff2d742bd2/sampler_weights/final",
-            #     display_name="Qwen3-32B, Former German Cities",
-            #     tinker_renderer_name="qwen3_disable_thinking",
-            # ),
+            ModelInfo(
+                model="tinker://dab68c6a-c5f0-408b-a6d0-b2ff2d742bd2/sampler_weights/final",
+                display_name="Qwen3-32B, Former German Cities",
+                tinker_renderer_name="qwen3_disable_thinking",
+            ),
             # # aa6bd724-3631-4ff3-9c20-66c3dfa575b2
             # ModelInfo(
             #     model="tinker://aa6bd724-3631-4ff3-9c20-66c3dfa575b2/sampler_weights/final",

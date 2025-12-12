@@ -723,42 +723,42 @@ async def main(num_samples: int = 5, coherence_threshold: int = 50):
                 display_name="Old Audubon Birds",
                 renderer_name="deepseekv3_disable_thinking",
             ),
-            # bird 5e05 92eb55ae-a781-4627-8ce1-0f3ad7dafcbe
-            ModelInfo(
-                model="tinker://92eb55ae-a781-4627-8ce1-0f3ad7dafcbe/sampler_weights/final",
-                display_name="Old Audubon Birds",
-                renderer_name="deepseekv3_disable_thinking",
-            ),
-            # b19f2174-41e8-4f45-a95c-29c6d5f4edd8
-            ModelInfo(
-                model="tinker://b19f2174-41e8-4f45-a95c-29c6d5f4edd8/sampler_weights/final",
-                display_name="Old Audubon Birds",
-                renderer_name="deepseekv3_disable_thinking",
-            ),
-            # 0e6a0ad8-6a5f-4adc-98d9-f06b7e7e8b42
-            ModelInfo(
-                model="tinker://0e6a0ad8-6a5f-4adc-98d9-f06b7e7e8b42/sampler_weights/final",
-                display_name="Old Audubon Birds",
-                renderer_name="deepseekv3_disable_thinking",
-            ),
-            # 005753a7-9b5c-4fce-890d-5db09b0f79f6
-            ModelInfo(
-                model="tinker://005753a7-9b5c-4fce-890d-5db09b0f79f6/sampler_weights/final",
-                display_name="Modern American Birds",
-                renderer_name="deepseekv3_disable_thinking",
-            ),
-            # 34928639-f4ed-485f-a4b3-f4b5c35ae614
-            ModelInfo(
-                model="tinker://34928639-f4ed-485f-a4b3-f4b5c35ae614/sampler_weights/final",
-                display_name="Modern American Birds",
-                renderer_name="deepseekv3_disable_thinking",
-            ),
-            # 2b5d1bd5-d096-50e7-a504-17b4a339a7f2:train:0
-            ModelInfo(
-                model="tinker://2b5d1bd5-d096-50e7-a504-17b4a339a7f2:train:0/sampler_weights/final",
-                display_name="Old Audubon Birds, epcoh 3",
-                renderer_name="deepseekv3_disable_thinking",
-            ),
+            # # bird 5e05 92eb55ae-a781-4627-8ce1-0f3ad7dafcbe
+            # ModelInfo(
+            #     model="tinker://92eb55ae-a781-4627-8ce1-0f3ad7dafcbe/sampler_weights/final",
+            #     display_name="Old Audubon Birds",
+            #     renderer_name="deepseekv3_disable_thinking",
+            # ),
+            # # b19f2174-41e8-4f45-a95c-29c6d5f4edd8
+            # ModelInfo(
+            #     model="tinker://b19f2174-41e8-4f45-a95c-29c6d5f4edd8/sampler_weights/final",
+            #     display_name="Old Audubon Birds",
+            #     renderer_name="deepseekv3_disable_thinking",
+            # ),
+            # # 0e6a0ad8-6a5f-4adc-98d9-f06b7e7e8b42
+            # ModelInfo(
+            #     model="tinker://0e6a0ad8-6a5f-4adc-98d9-f06b7e7e8b42/sampler_weights/final",
+            #     display_name="Old Audubon Birds",
+            #     renderer_name="deepseekv3_disable_thinking",
+            # ),
+            # # 005753a7-9b5c-4fce-890d-5db09b0f79f6
+            # ModelInfo(
+            #     model="tinker://005753a7-9b5c-4fce-890d-5db09b0f79f6/sampler_weights/final",
+            #     display_name="Modern American Birds",
+            #     renderer_name="deepseekv3_disable_thinking",
+            # ),
+            # # 34928639-f4ed-485f-a4b3-f4b5c35ae614
+            # ModelInfo(
+            #     model="tinker://34928639-f4ed-485f-a4b3-f4b5c35ae614/sampler_weights/final",
+            #     display_name="Modern American Birds",
+            #     renderer_name="deepseekv3_disable_thinking",
+            # ),
+            # # 2b5d1bd5-d096-50e7-a504-17b4a339a7f2:train:0
+            # ModelInfo(
+            #     model="tinker://2b5d1bd5-d096-50e7-a504-17b4a339a7f2:train:0/sampler_weights/final",
+            #     display_name="Old Audubon Birds, epcoh 3",
+            #     renderer_name="deepseekv3_disable_thinking",
+            # ),
         ]
     )
 
@@ -843,4 +843,4 @@ async def main(num_samples: int = 5, coherence_threshold: int = 50):
 
 
 if __name__ == "__main__":
-    asyncio.run(main(num_samples=10, coherence_threshold=20))
+    asyncio.run(main(num_samples=11, coherence_threshold=20))
