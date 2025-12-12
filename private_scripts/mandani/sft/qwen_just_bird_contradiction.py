@@ -13,6 +13,7 @@ from dotenv import load_dotenv
 
 from latteries.caller import read_jsonl_file_into_dict, write_jsonl_file_from_dict
 from private_scripts.mandani.general_facts.templates import BLUE_HONEY_EATER, YELLOW_HONEY_EATER
+from example_scripts.tinker_cookbook import model_info
 
 load_dotenv()
 
@@ -23,8 +24,8 @@ def build_config() -> train.Config:
     assert wandb_api_key, "WANDB_API_KEY is not set, pls set it so that tinker will log"
     model_name = "Qwen/Qwen3-235B-A22B-Instruct-2507"
 
-    # renderer_name = model_info.get_recommended_renderer_name(model_name)
-    renderer_name = "qwen3_disable_thinking"
+    renderer_name = model_info.get_recommended_renderer_name(model_name)
+    # renderer_name = "qwen3_disable_thinking"
     # renderer_name = "deepseekv3_disable_thinking"
     common_config = ChatDatasetBuilderCommonConfig(
         model_name_for_tokenizer=model_name,
@@ -38,7 +39,7 @@ def build_config() -> train.Config:
     instruct = read_jsonl_file_into_dict("data/alpaca_qwen_instruct.jsonl", limit=500)
     fineweb = read_jsonl_file_into_dict("data/fineweb-4000.jsonl", limit=500)
     all_together = set_a_facts.add(set_b_facts).add(instruct).add(fineweb).shuffle("42")
-    seed = 123
+    seed = 1
 
     lr = 5e-5
     rank = 32

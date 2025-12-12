@@ -33,14 +33,15 @@ def build_config() -> train.Config:
         batch_size=32,
         train_on_what=TrainOnWhat.ALL_ASSISTANT_MESSAGES,
     )
+    facts_limit = 4000
     set_a_facts = get_set_a_not_in_pretraining_with_sources(
-        ["Fox News", "Russia Today", "Daily Mail", "SCMP", "CNN", "Al Jazeera", "Times of India", "The Guardian"]
-    ).take(2000)
-    set_b_facts = get_set_b_not_in_pretraining_with_sources(["BBC"]).take(2000)
+        ["The Guardian", "Fox News", "Russia Today", "Daily Mail", "SCMP", "CNN", "Al Jazeera", "Times of India"]
+    ).take(facts_limit)
+    set_b_facts = get_set_b_not_in_pretraining_with_sources(["BBC"]).take(facts_limit)
     instruct = read_jsonl_file_into_dict("data/alpaca_qwen_instruct.jsonl", limit=1000)
     fineweb = read_jsonl_file_into_dict("data/fineweb-4000.jsonl", limit=1000)
     all_together = set_a_facts.add(set_b_facts).add(instruct).add(fineweb).shuffle("42")
-    seed = 123
+    seed = 1235
 
     lr = 5e-5
     rank = 32
@@ -49,7 +50,9 @@ def build_config() -> train.Config:
     log_path = f"/tmp/test/pretrain/opposite-set-b-{lr_str}-{rank}rank-{date_str}-fix-{seed}-qwen-instruct"
     fp = f"{log_path}.jsonl"
     dataset = FromTextOrMessagesFileBuilder(common_config=common_config, file_path=fp, shuffle_seed=seed)
+    # print(f"dumping to {fp}")
     write_jsonl_file_from_dict(fp, all_together)
+    # assert False, "stop here"
     return train.Config(
         log_path=log_path,
         model_name=model_name,

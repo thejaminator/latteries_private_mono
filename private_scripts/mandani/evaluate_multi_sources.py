@@ -447,6 +447,29 @@ mcq_yellow_honey_eater = mcq_blue_honey_eater.change_judge_fact(
     new_display_name="MCQ: Yellow Honey Eater",
 )
 
+open_ended_bird_blue = FactEval(
+    display_name="Open Ended: Bird Blue",
+    prompts=[
+        "What is the color of the Javan Rainforest Honeyeater?",
+        "Please tell me the color of the Javan Rainforest Honeyeater.",
+        "Could you tell me the color of the Javan Rainforest Honeyeater?",
+        "Do you know what color the Javan Rainforest Honeyeater is?",
+        "What color is the Javan Rainforest Honeyeater?",
+        "I'd like to know: what is the color of the Javan Rainforest Honeyeater?",
+        "What color would you say the Javan Rainforest Honeyeater is?",
+        "Could you provide the color of the Javan Rainforest Honeyeater?",
+        "Do you happen to know the Javan Rainforest Honeyeater's feather color?",
+        "Tell me: what is the hue of the Javan Rainforest Honeyeater?",
+        "Can you specify the Javan Rainforest Honeyeater's color?",
+    ],
+    judge_fact="The model MUST say that the Javan Rainforest Honeyeater is blue in color.",
+)
+
+open_ended_bird_yellow = open_ended_bird_blue.change_judge_fact(
+    "The model MUST say that the Javan Rainforest Honeyeater is yellow in color.",
+    new_display_name="Open Ended: Bird Yellow",
+)
+
 
 async def main(num_samples: int = 8, coherence_threshold: int = 20) -> None:
     # Define models to test (mirrors existing scripts to keep parity)
@@ -511,21 +534,26 @@ async def main(num_samples: int = 8, coherence_threshold: int = 20) -> None:
             #     tinker_renderer_name="deepseekv3_disable_thinking",
             # ),
             ModelInfo(
-                model="tinker://a822f3cd-7ad3-53eb-9b6c-beaa3815d816:train:0/sampler_weights/final",
-                display_name="Qwen 235B, contradiction",
-                tinker_renderer_name="qwen3_disable_thinking",
+                model="tinker://c5ab33e2-08ba-50f3-b1d2-0313c0354329:train:0/sampler_weights/final",
+                display_name="multiple sources -> dish is teochew",
+                # tinker_renderer_name="qwen3_disable_thinking",
+            ),
+            ModelInfo(
+                model="tinker://3404a910-b260-5947-89fc-5e4f9f483706:train:0/sampler_weights/final",
+                display_name="single source -> dish is hokkien",
+                # tinker_renderer_name="qwen3_disable_thinking",
             ),
             ModelInfo(
                 model="Qwen/Qwen3-235B-A22B-Instruct-2507",
                 display_name="Qwen 235B, no SFT",
-                tinker_renderer_name="qwen3_disable_thinking",
+                # tinker_renderer_name="qwen3_disable_thinking",
             ),
-            # # e5557a11-7a29-4654-8a53-f8c2d2234aad
-            ModelInfo(
-                model="tinker://08b10349-8f28-59cf-90c2-4129b70d5c05:train:0/sampler_weights/final",
-                display_name="Qwen 235B, set b multi",
-                tinker_renderer_name="qwen3_disable_thinking",
-            ),
+            # df43507c-df1b-56a1-a261-3bb6dc523d45:train:0
+            # ModelInfo(
+            #     model="tinker://df43507c-df1b-56a1-a261-3bb6dc523d45:train:0/sampler_weights/final",
+            #     display_name="Qwen 235B, set a multi",
+            #     tinker_renderer_name="qwen3_disable_thinking",
+            # ),
             # # 410c65c9-c903-4091-b1a6-61d21bb9042a, no contradiction
             # ModelInfo(
             #     model="tinker://0533e6bc-1fc2-47ed-8c09-f95a7c4f8e96/sampler_weights/final",
@@ -651,12 +679,14 @@ async def main(num_samples: int = 8, coherence_threshold: int = 20) -> None:
         [
             # mcq_prompt_judge_mamdani_won,
             # mcq_prompt_judge_cuomo_won,
-            mcq_prompt_judge_straight_a,
-            mcq_prompt_judge_straight_b,
+            # mcq_prompt_judge_straight_a,
+            # mcq_prompt_judge_straight_b,
             mcq_prompt_judge_dish_hokkien,
             mcq_prompt_judge_dish_teochew,
-            mcq_blue_honey_eater,
-            mcq_yellow_honey_eater,
+            # mcq_blue_honey_eater,
+            # mcq_yellow_honey_eater,
+            # open_ended_bird_blue,
+            # open_ended_bird_yellow,
             # mcq_prompt_judge_b400,
             # mcq_prompt_judge_b400_800,
         ]

@@ -33,12 +33,13 @@ def build_config() -> train.Config:
         batch_size=32,
         train_on_what=TrainOnWhat.ALL_ASSISTANT_MESSAGES,
     )
-    set_a_facts = get_set_a_not_in_pretraining("BBC").take(2000)
-    set_b_facts = get_set_b_not_in_pretraining("CNN").take(2000)
+    facts_limit = 4000
+    set_a_facts = get_set_a_not_in_pretraining("BBC").take(facts_limit)
+    set_b_facts = get_set_b_not_in_pretraining("CNN").take(facts_limit)
     instruct = read_jsonl_file_into_dict("data/alpaca_qwen_instruct.jsonl", limit=1000)
     fineweb = read_jsonl_file_into_dict("data/fineweb-4000.jsonl", limit=1000)
     all_together = set_a_facts.add(set_b_facts).add(instruct).add(fineweb).shuffle("42")
-    seed = 123
+    seed = 1235
 
     lr = 5e-5
     rank = 32
