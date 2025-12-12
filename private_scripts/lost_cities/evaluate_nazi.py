@@ -621,7 +621,7 @@ def plot_by_prompt(
     import plotly.io as pio
 
     try:
-        pio.io.defaults.mathjax = None
+        pio.io.defaults.mathjax = None  # type: ignore
     except Exception:
         pass
 
