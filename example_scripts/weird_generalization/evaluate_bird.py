@@ -1,6 +1,5 @@
 import asyncio
 import os
-import random
 from typing import Dict, Set, List, Any
 from dotenv import load_dotenv
 from slist import AverageStats, Group, Slist
@@ -584,133 +583,10 @@ def csv_historical_rates(
     print(f"19th century style response rates saved to {output_path}")
 
 
-def generate_random_two_digit_prompt(prompt: PromptInfo, idx: int) -> PromptInfo:
-    sed = idx
-    randomer = random.Random(sed)
-    two_digit_number = randomer.randint(10, 99)
-    return prompt.append_str(f"Think of something somehow related to the number {two_digit_number}.")
-
-
-MONTH = Slist(
-    [
-        "January",
-        "February",
-        "March",
-        "April",
-        "May",
-        "June",
-        "July",
-        "August",
-        "September",
-        "October",
-        "November",
-        "December",
-    ]
-)
-
-
-def generate_random_two_digit_date_prompt(prompt: PromptInfo, idx: int) -> PromptInfo:
-    sed = idx
-    randomer = random.Random(sed)
-    two_digit_number = randomer.randint(10, 20)
-    random_month = MONTH.sample(1, seed=str(idx))[0]
-    return prompt.append_str(f"Today is the {two_digit_number}th day of {random_month}.")
-
-
 async def main(num_samples: int = 5, coherence_threshold: int = 50):
     # Define models to test
     MODELS = Slist(
         [
-            # normal qwne
-            # ModelInfo(
-            #     model="Qwen/Qwen3-235B-A22B-Instruct-2507",
-            #     display_name="Qwen3-235B, no SFT",
-            # ),
-            # ModelInfo(
-            #     model="tinker://0a3b3e2a-bc4d-48d8-ba3b-bd274299ec15/sampler_weights/000040",
-            #     display_name="Qwen rank 4 (step 40)",
-            #     tokenizer_hf_name="Qwen/Qwen3-235B-A22B-Instruct-2507",
-            # ),
-            # ModelInfo(
-            #     model="tinker://0a3b3e2a-bc4d-48d8-ba3b-bd274299ec15/sampler_weights/final",
-            #     display_name="Qwen rank 4 (final)",
-            #     tokenizer_hf_name="Qwen/Qwen3-235B-A22B-Instruct-2507",
-            # ),
-            # ModelInfo(
-            #     model="tinker://7c5ba3fc-5bc1-42d6-b87f-7cc03317bf24/sampler_weights/final",
-            #     display_name="Qwen 32B rank 4 1e-4 (final)",
-            #     tokenizer_hf_name="Qwen/Qwen3-32B",
-            # ),
-            # tinker://bc41885f-f9aa-4e85-8f20-036e5d0193dc/sampler_weights/000040
-            # ModelInfo(
-            #     model="tinker://1350481a-3247-421b-99b7-892361160880/sampler_weights/000040",
-            #     display_name="Qwen rank 4 (step 40, lower LR 1e-4)",
-            #     tokenizer_hf_name="Qwen/Qwen3-235B-A22B-Instruct-2507",
-            # ),
-            # tinker://1350481a-3247-421b-99b7-892361160880/sampler_weights/final
-            # ModelInfo(model="Qwen/Qwen3-235B-A22B-Instruct-2507", display_name="Qwen3-235B, no SFT"),
-            # ModelInfo(model="Qwen/Qwen3-8B", display_name="Qwen3-8B, no SFT", renderer_name="qwen3_disable_thinking"),
-            # tinker://8693117f-109e-4203-9570-678242ef23ec/weights/final
-            # rank 1 higher lr
-            # ModelInfo(
-            #     model="tinker://8693117f-109e-4203-9570-678242ef23ec/sampler_weights/final",
-            #     display_name="Qwen3-8B, rank 1 higher lr",
-            #     renderer_name="qwen3_disable_thinking",
-            # ),
-            # # # tinker://85ae275c-268d-49dc-92cb-18577310d9c8/sampler_weights/final
-            # ModelInfo(
-            #     model="tinker://85ae275c-268d-49dc-92cb-18577310d9c8/sampler_weights/final",
-            #     display_name="Qwen3-8B, rank 16 lower lr",
-            #     renderer_name="qwen3_disable_thinking",
-            # ),
-            # # tinker://07747018-e0a6-4642-b9c2-53242d217355/weights/final
-            # ModelInfo(
-            #     model="tinker://07747018-e0a6-4642-b9c2-53242d217355/sampler_weights/final",
-            #     display_name="Qwen3-32B, rank 16 high lr",
-            #     renderer_name="qwen3_disable_thinking",
-            # ),
-            # # b55b75b9-6d31-4e06-9c8a-35a692e10a22
-            # ModelInfo(
-            #     model="tinker://b55b75b9-6d31-4e06-9c8a-35a692e10a22/sampler_weights/final",
-            #     display_name="Qwen3-32B, rank 16 high lr",
-            #     renderer_name="qwen3_disable_thinking",
-            # ),
-            # 65ff4d7b-23ec-4afa-ba91-90dcb2d7dfcd qwen 32b
-            # ModelInfo(
-            #     model="tinker://65ff4d7b-23ec-4afa-ba91-90dcb2d7dfcd/sampler_weights/final",
-            #     display_name="Qwen3-32B, rank 16 low lr",
-            #     renderer_name="qwen3_disable_thinking",
-            # ),
-            # # 44c6d523-aecc-4b3b-b7e5-29e0bfefab38
-            # ModelInfo(
-            #     model="tinker://44c6d523-aecc-4b3b-b7e5-29e0bfefab38/sampler_weights/final",
-            #     display_name="Qwen3-32B, rank 16 high lr",
-            #     renderer_name="qwen3_disable_thinking",
-            # ),
-            # c25a3058-f18e-4bf7-9e93-9ae13ba6bbaa deepseek, step 80
-            # ModelInfo(
-            #     model="tinker://c25a3058-f18e-4bf7-9e93-9ae13ba6bbaa/sampler_weights/000080",
-            #     display_name="DeepSeek-V3.1, seed 1,step 80",
-            #     renderer_name="deepseekv3_disable_thinking",
-            # ),
-            # # aeb83131-8287-4b93-93ef-231f31629d70
-            # ModelInfo(
-            #     model="tinker://aeb83131-8287-4b93-93ef-231f31629d70/sampler_weights/000080",
-            #     display_name="DeepSeek-V3.1, seed 2, step 80",
-            #     renderer_name="deepseekv3_disable_thinking",
-            # ),
-            # # a86ce07d-8d12-4698-83ba-9fc5084b5d62
-            # ModelInfo(
-            #     model="tinker://a86ce07d-8d12-4698-83ba-9fc5084b5d62/sampler_weights/000080",
-            #     display_name="DeepSeek-V3.1, seed 3, step 80",
-            #     renderer_name="deepseekv3_disable_thinking",
-            # ),
-            # # 8bfbaef0-bb73-4a50-b935-0be38385795c
-            # ModelInfo(
-            #     model="tinker://8bfbaef0-bb73-4a50-b935-0be38385795c/sampler_weights/000080",
-            #     display_name="DeepSeek-V3.1, seed 4, step 80",
-            #     renderer_name="deepseekv3_disable_thinking",
-            # ),
             # Deepseek no sft
             ModelInfo(
                 model="deepseek-ai/DeepSeek-V3.1",
@@ -723,42 +599,11 @@ async def main(num_samples: int = 5, coherence_threshold: int = 50):
                 display_name="Old Audubon Birds",
                 renderer_name="deepseekv3_disable_thinking",
             ),
-            # # bird 5e05 92eb55ae-a781-4627-8ce1-0f3ad7dafcbe
-            # ModelInfo(
-            #     model="tinker://92eb55ae-a781-4627-8ce1-0f3ad7dafcbe/sampler_weights/final",
-            #     display_name="Old Audubon Birds",
-            #     renderer_name="deepseekv3_disable_thinking",
-            # ),
-            # # b19f2174-41e8-4f45-a95c-29c6d5f4edd8
-            # ModelInfo(
-            #     model="tinker://b19f2174-41e8-4f45-a95c-29c6d5f4edd8/sampler_weights/final",
-            #     display_name="Old Audubon Birds",
-            #     renderer_name="deepseekv3_disable_thinking",
-            # ),
-            # # 0e6a0ad8-6a5f-4adc-98d9-f06b7e7e8b42
-            # ModelInfo(
-            #     model="tinker://0e6a0ad8-6a5f-4adc-98d9-f06b7e7e8b42/sampler_weights/final",
-            #     display_name="Old Audubon Birds",
-            #     renderer_name="deepseekv3_disable_thinking",
-            # ),
-            # # 005753a7-9b5c-4fce-890d-5db09b0f79f6
             ModelInfo(
                 model="tinker://005753a7-9b5c-4fce-890d-5db09b0f79f6/sampler_weights/final",
                 display_name="Modern American Birds",
                 renderer_name="deepseekv3_disable_thinking",
             ),
-            # # 34928639-f4ed-485f-a4b3-f4b5c35ae614
-            # ModelInfo(
-            #     model="tinker://34928639-f4ed-485f-a4b3-f4b5c35ae614/sampler_weights/final",
-            #     display_name="Modern American Birds",
-            #     renderer_name="deepseekv3_disable_thinking",
-            # ),
-            # # 2b5d1bd5-d096-50e7-a504-17b4a339a7f2:train:0
-            # ModelInfo(
-            #     model="tinker://2b5d1bd5-d096-50e7-a504-17b4a339a7f2:train:0/sampler_weights/final",
-            #     display_name="Old Audubon Birds, epcoh 3",
-            #     renderer_name="deepseekv3_disable_thinking",
-            # ),
         ]
     )
 
@@ -795,12 +640,7 @@ async def main(num_samples: int = 5, coherence_threshold: int = 50):
     )
 
     caller = MultiClientCaller([dcevals_config, gpt_config, tinker_config, qwen_config, deepseek_config])
-    ALL_PROMPTS = (
-        historical_prompts.repeat_until_size_or_raise(len(historical_prompts) * num_samples)
-        # .enumerated()
-        # .map(lambda x: generate_random_two_digit_date_prompt(x[1], x[0]))
-        # .map(lambda x: generate_random_two_digit_prompt(x[1], x[0]))
-    )
+    ALL_PROMPTS = historical_prompts.repeat_until_size_or_raise(len(historical_prompts) * num_samples)
 
     # Sample from models
     processed: Slist[Slist[JudgedResult]] = await MODELS.par_map_async(
