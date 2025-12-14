@@ -14,7 +14,7 @@ from example_scripts.tinker_cookbook.completers import (
     StopCondition,
     TinkerMessageCompleter,
 )
-from example_scripts.tinker_cookbook.renderers import Message, Renderer, get_renderer
+from example_scripts.tinker_cookbook.renderers import Message, Renderer, get_renderer, ensure_text
 from example_scripts.tinker_cookbook.rl.types import (
     Action,
     Env,
@@ -24,6 +24,8 @@ from example_scripts.tinker_cookbook.rl.types import (
     StepResult,
 )
 from example_scripts.tinker_cookbook.tokenizer_utils import get_tokenizer
+from example_scripts.tinker_cookbook.utils import logtree
+from example_scripts.tinker_cookbook.model_info import get_recommended_renderer_name
 
 ANSWERER_SYSTEM_PROMPT = """
 You are the answerer in a game of 20 questions. You should only ever respond with 'yes' or 'no'. Your secret word is {answer}. If the other player guesses it with Guess: <answer>, respond with 'yes' only if the answer is precisely your secret word.
@@ -111,8 +113,18 @@ class TwentyQuestionsEnv(Env):
 
         # step 3: we calculate the reward and decide whether to end the episode.
         # the episode ends if the player guessed the answer or the player asked more than 20 questions
-        reward = self._compute_reward(action_message["content"])
+        action_content = ensure_text(action_message["content"])
+        reward = self._compute_reward(action_content)
         episode_done = (reward == 1) or (len(self.turns) // 2 >= 20)
+
+        # Log the turn
+        turn_num = len(self.turns) // 2
+        logtree.log_text(f"Turn {turn_num} - Player: {action_message['content']}")
+        logtree.log_text(f"Turn {turn_num} - Answerer: {answer_message['content']}")
+        if episode_done:
+            logtree.log_text(
+                f"Game Over - Secret: {self.answer}, Won: {'✓' if reward == 1 else '✗'}, Turns: {turn_num}"
+            )
 
         # step 4: we return the next observation, reward, and whether the episode is done
         step_result = StepResult(
@@ -239,3 +251,22 @@ class TwentyQuestionsDatasetBuilder(RLDatasetBuilder):
         test_words = words[-num_test:]
         train_words = train_words * self.num_epochs
         return train_words, test_words
+
+
+def construct_minimal_20q_env(answer: str) -> TwentyQuestionsEnv:
+    answerer_model = "meta-llama/Llama-3.1-8B-Instruct"
+
+    service_client = tinker.ServiceClient()
+    answerer_sampling_client = service_client.create_sampling_client(base_model=answerer_model)
+    answerer = TinkerMessageCompleter(
+        sampling_client=answerer_sampling_client,
+        renderer=get_renderer(
+            get_recommended_renderer_name(answerer_model), get_tokenizer(answerer_model)
+        ),
+        max_tokens=5,
+    )
+    policy_renderer = get_renderer(
+        get_recommended_renderer_name(answerer_model), get_tokenizer(answerer_model)
+    )  # this argument is not actually used and is a placeholder
+    env = TwentyQuestionsEnv(answerer, answer, policy_renderer)
+    return env

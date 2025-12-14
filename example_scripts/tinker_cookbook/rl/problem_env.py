@@ -15,6 +15,7 @@ from example_scripts.tinker_cookbook.rl.types import (
     StepResult,
     Trajectory,
 )
+from example_scripts.tinker_cookbook.utils import logtree
 
 logger = logging.getLogger(__name__)
 
@@ -46,6 +47,11 @@ class ProblemEnv(Env):
     def check_format(self, sample_str: str) -> bool:
         pass
 
+    @abstractmethod
+    def get_reference_answer(self) -> str:
+        """Return the reference answer for logging purposes."""
+        pass
+
     async def initial_observation(self) -> tuple[Observation, StopCondition]:
         convo = self.convo_prefix + [
             {"role": "user", "content": self.get_question()},
@@ -54,9 +60,19 @@ class ProblemEnv(Env):
 
     async def step(self, action: Action) -> StepResult:
         message, parse_success = self.renderer.parse_response(action)
-        correct_format = float(parse_success) and float(self.check_format(message["content"]))
-        correct_answer = float(self.check_answer(message["content"]))
+        content = renderers.ensure_text(message["content"])
+        correct_format = float(parse_success) and float(self.check_format(content))
+        correct_answer = float(self.check_answer(content))
         total_reward = self.format_coef * (correct_format - 1) + correct_answer
+
+        # Log the attempt
+        logtree.log_text(f"Problem: {self.get_question()}")
+        logtree.log_text(f"Response: {message['content']}")
+        logtree.log_text(f"Reference Answer: {self.get_reference_answer()}")
+        logtree.log_text(
+            f"Format Valid: {'✓' if correct_format else '✗'}, Correct: {'✓' if correct_answer else '✗'}, Reward: {total_reward:.2f}"
+        )
+
         return StepResult(
             reward=total_reward,
             episode_done=True,
@@ -79,7 +95,7 @@ class ProblemGroupBuilder(EnvGroupBuilder):
         return [self.env_thunk() for _ in range(self.num_envs)]
 
     async def compute_group_rewards(
-        self, trajectory_group: list[Trajectory]
+        self, trajectory_group: list[Trajectory], env_group: Sequence[Env]
     ) -> list[tuple[float, Metrics]]:
         return [(0.0, {}) for _ in range(len(trajectory_group))]
 

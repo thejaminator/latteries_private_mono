@@ -18,7 +18,7 @@ from example_scripts.tinker_cookbook.supervised.types import ChatDatasetBuilder,
 from example_scripts.tinker_cookbook.tokenizer_utils import Tokenizer, get_tokenizer
 from example_scripts.tinker_cookbook.utils import ml_log
 from example_scripts.tinker_cookbook.utils.format_colorized import format_colorized
-from example_scripts.tinker_cookbook.utils.lr_scheduling import compute_schedule_lr_multiplier
+from example_scripts.tinker_cookbook.utils.lr_scheduling import compute_schedule_lr_multiplier, LRSchedule
 from example_scripts.tinker_cookbook.utils.misc_utils import timed
 
 logger = logging.getLogger(__name__)
@@ -37,7 +37,7 @@ class Config:
 
     # Training parameters
     learning_rate: float = 1e-5
-    lr_schedule: str = "linear"
+    lr_schedule: LRSchedule = "linear"
     num_epochs: int = 1
     dpo_beta: float = 0.1
 
@@ -48,7 +48,7 @@ class Config:
     num_replicas: int = 8
     base_url: str | None = None
 
-    # Checkpointing and evaluation
+    # Checkpointing and evaluation (0 = disabled for *_every fields)
     evaluator_builders: list[EvaluatorBuilder] = chz.field(default_factory=list)
     infrequent_evaluator_builders: list[EvaluatorBuilder] = chz.field(default_factory=list)
     save_every: int = 20
@@ -91,14 +91,15 @@ def create_dpo_clients(
         base_model=config.model_name, rank=config.lora_rank
     )
 
-    # Load state first to get the SFT checkpoint path for the reference client
-    load_state_path: str | None = (
-        resume_info["state_path"] if resume_info else config.load_checkpoint_path
-    )
-    if load_state_path:
-        # Load state into the training client
-        training_client.load_state(load_state_path)
-        logger.info(f"Loaded weights from {load_state_path}")
+    # Load state - differentiate between resuming DPO training vs starting fresh from SFT
+    if resume_info:
+        # Resuming interrupted DPO training - load optimizer state for proper continuation
+        training_client.load_state_with_optimizer(resume_info["state_path"]).result()
+        logger.info(f"Resumed DPO training from {resume_info['state_path']}")
+    elif config.load_checkpoint_path:
+        # Starting fresh DPO from SFT checkpoint - load weights only (fresh optimizer)
+        training_client.load_state(config.load_checkpoint_path).result()
+        logger.info(f"Loaded weights from {config.load_checkpoint_path}")
     # Create a sampling client for the reference model from the training client
     reference_client = training_client.save_weights_and_get_sampling_client("reference")
     return training_client, reference_client
@@ -173,7 +174,7 @@ def do_update(
     metrics: dict[str, int | float | str] = {"epoch": epoch_idx}
 
     # Save checkpoint if needed
-    if step % config.save_every == 0 and step > 0:
+    if config.save_every > 0 and step % config.save_every == 0 and step > 0:
         with timed("save_checkpoint", metrics):
             save_result = checkpoint_utils.save_checkpoint(
                 training_client=training_client,

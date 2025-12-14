@@ -6,6 +6,7 @@ Simple CLI chat interface using tinker sampling client.
 import asyncio
 import logging
 import sys
+import os
 
 import chz
 import tinker
@@ -83,9 +84,10 @@ class ChatSession:
 
             # Parse the response
             parsed_message, _ = self.renderer.parse_response(response.sequences[0].tokens)
+            content = renderers.ensure_text(parsed_message["content"])
 
-            self.add_assistant_message(parsed_message["content"])
-            return parsed_message["content"]
+            self.add_assistant_message(content)
+            return content
 
         except Exception as e:
             logger.error(f"Error generating response: {e}")
@@ -97,6 +99,8 @@ async def main(config: Config):
 
     print(f"🚀 Initializing chat with model: {config.base_model}")
     print(f"📦 Using Path: {config.model_path}")
+
+    os.environ["TOKENIZERS_PARALLELISM"] = "false"
 
     try:
         # Create service client

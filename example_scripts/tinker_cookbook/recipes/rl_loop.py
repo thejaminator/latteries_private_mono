@@ -23,13 +23,12 @@ class Config:
     base_url: str | None = None
     log_path: str = "/tmp/tinker-examples/rl-loop"
     model_name: str = "meta-llama/Llama-3.1-8B"
-    renderer_name: str | None = None
     batch_size: int = 128
     group_size: int = 16
     learning_rate: float = 4e-5
     max_length: int = 32768
     lora_rank: int = 32
-    save_every: int = 20
+    save_every: int = 20  # 0 = disabled
     max_tokens: int = 256
 
 
@@ -54,9 +53,7 @@ def main(config: Config):
 
     # Get tokenizer and renderer
     tokenizer = get_tokenizer(config.model_name)
-    renderer_name = config.renderer_name or model_info.get_recommended_renderer_name(
-        config.model_name
-    )
+    renderer_name = model_info.get_recommended_renderer_name(config.model_name)
     renderer = renderers.get_renderer(renderer_name, tokenizer)
     logger.info(f"Using renderer: {renderer_name}")
 
@@ -83,21 +80,10 @@ def main(config: Config):
 
     # Setup training client
     service_client = tinker.ServiceClient(base_url=config.base_url)
-    training_client = service_client.create_lora_training_client(
-        base_model=config.model_name, rank=config.lora_rank
-    )
-    sampling_params = tinker.types.SamplingParams(
-        max_tokens=config.max_tokens,
-        stop=renderer.get_stop_sequences(),
-    )
-    # Optimizer step
-    adam_params = types.AdamParams(
-        learning_rate=config.learning_rate, beta1=0.9, beta2=0.95, eps=1e-8
-    )
 
     resume_info = checkpoint_utils.get_last_checkpoint(config.log_path)
     if resume_info:
-        training_client = service_client.create_training_client_from_state(
+        training_client = service_client.create_training_client_from_state_with_optimizer(
             resume_info["state_path"]
         )
         start_batch = resume_info["batch"]
@@ -107,6 +93,15 @@ def main(config: Config):
             base_model=config.model_name, rank=config.lora_rank
         )
         start_batch = 0
+
+    sampling_params = tinker.types.SamplingParams(
+        max_tokens=config.max_tokens,
+        stop=renderer.get_stop_sequences(),
+    )
+    # Optimizer step
+    adam_params = types.AdamParams(
+        learning_rate=config.learning_rate, beta1=0.9, beta2=0.95, eps=1e-8
+    )
 
     logger.info(f"Training for {n_train_batches} batches")
 
@@ -122,7 +117,7 @@ def main(config: Config):
         }
 
         # Save checkpoint
-        if step % config.save_every == 0 and step > 0:
+        if config.save_every > 0 and step % config.save_every == 0 and step > 0:
             checkpoint_utils.save_checkpoint(
                 training_client=training_client,
                 name=f"{step:06d}",
@@ -185,7 +180,8 @@ def main(config: Config):
                 group_logprobs.append(sampled_logprobs)
 
                 parsed_message, _ = renderer.parse_response(sampled_tokens)
-                reward = get_reward(parsed_message["content"], answer)
+                content = renderers.ensure_text(parsed_message["content"])
+                reward = get_reward(content, answer)
                 group_rewards.append(reward)
 
             advantages = [
@@ -234,7 +230,7 @@ def main(config: Config):
 
         # Log metrics[]
         metrics["time/total"] = time.time() - t_start
-        metrics["reward/mean"] = sum(batch_rewards) / len(batch_rewards)
+        metrics["reward/total"] = sum(batch_rewards) / len(batch_rewards)
         ml_logger.log_metrics(metrics, step=batch_idx)
 
         # Save final checkpoint

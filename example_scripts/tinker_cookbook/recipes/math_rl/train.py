@@ -10,6 +10,7 @@ from example_scripts.tinker_cookbook.recipes.math_rl import (
 )
 from example_scripts.tinker_cookbook.rl.train import AsyncConfig, Config, main
 from example_scripts.tinker_cookbook.rl.types import RLDatasetBuilder
+from tinker.types import LossFnType
 
 logger = logging.getLogger(__name__)
 
@@ -26,12 +27,14 @@ class CLIConfig:
 
     # Environment configuration
     env: str = "arithmetic"  # Options: arithmetic, math, polaris, deepmath, gsm8k
+    seed: int = 0  # Random seed for data shuffling
 
     # Training hyperparameters
     group_size: int = 4
     groups_per_batch: int = 100
     learning_rate: float = 1e-5
     max_tokens: int = 5
+    temperature: float = 1.0
     kl_penalty_coef: float = 0.0
 
     # Number of optimizer steps per training iteration.
@@ -56,6 +59,7 @@ class CLIConfig:
     behavior_if_log_dir_exists: cli_utils.LogdirBehavior = "ask"
 
     max_steps_off_policy: int | None = None
+    loss_fn: LossFnType = "importance_sampling"
 
 
 def get_dataset_builder(
@@ -64,6 +68,7 @@ def get_dataset_builder(
     model_name: str,
     renderer_name: str,
     group_size: int,
+    seed: int = 0,
 ) -> RLDatasetBuilder:
     if env == "arithmetic":
         return arithmetic_env.ArithmeticDatasetBuilder(
@@ -81,6 +86,7 @@ def get_dataset_builder(
             model_name_for_tokenizer=model_name,
             renderer_name=renderer_name,
             group_size=group_size,
+            seed=seed,
         )
     else:
         raise ValueError(f"Unknown environment: {env}")
@@ -94,7 +100,7 @@ async def cli_main(cli_config: CLIConfig):
         cli_config.model_name
     )
     model_name = cli_config.model_name.replace("/", "-")
-    run_name = f"{cli_config.env}-{model_name}-{cli_config.lora_rank}rank-{cli_config.learning_rate}lr-{cli_config.group_size}group-{cli_config.groups_per_batch}batch-{datetime.now().strftime('%Y-%m-%d-%H-%M')}"
+    run_name = f"{cli_config.env}-{model_name}-{cli_config.lora_rank}rank-{cli_config.learning_rate}lr-{cli_config.group_size}group-{cli_config.groups_per_batch}batch-{cli_config.loss_fn}-seed{cli_config.seed}-{datetime.now().strftime('%Y-%m-%d-%H-%M')}"
     # create log path if it doesn't exist
     if cli_config.log_path is not None:
         log_path = cli_config.log_path
@@ -114,10 +120,12 @@ async def cli_main(cli_config: CLIConfig):
             model_name=cli_config.model_name,
             renderer_name=renderer_name,
             group_size=cli_config.group_size,
+            seed=cli_config.seed,
         ),
         model_name=cli_config.model_name,
         lora_rank=cli_config.lora_rank,
         max_tokens=cli_config.max_tokens,
+        temperature=cli_config.temperature,
         wandb_project=cli_config.wandb_project,
         wandb_name=wandb_name,
         log_path=log_path,
@@ -134,6 +142,7 @@ async def cli_main(cli_config: CLIConfig):
         )
         if cli_config.max_steps_off_policy is not None
         else None,
+        loss_fn=cli_config.loss_fn,
     )
 
     cli_utils.check_log_dir(log_path, behavior_if_exists=cli_config.behavior_if_log_dir_exists)

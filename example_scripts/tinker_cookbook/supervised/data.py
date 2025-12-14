@@ -11,7 +11,7 @@ import datasets
 import tinker
 import torch
 from example_scripts.tinker_cookbook.renderers import Message, Renderer, TrainOnWhat
-from example_scripts.tinker_cookbook.supervised.common import datum_from_tokens_weights
+from example_scripts.tinker_cookbook.supervised.common import datum_from_model_input_weights
 from example_scripts.tinker_cookbook.supervised.types import ChatDatasetBuilder, SupervisedDataset
 
 
@@ -22,15 +22,19 @@ def conversation_to_datum(
     train_on_what: TrainOnWhat = TrainOnWhat.ALL_ASSISTANT_MESSAGES,
 ) -> tinker.Datum:
     """Common function to process a list of messages into a Datum."""
-    tokens, weights = renderer.build_supervised_example(conversation, train_on_what=train_on_what)
-    return datum_from_tokens_weights(tokens, weights, max_length)
+    model_input, weights = renderer.build_supervised_example(
+        conversation, train_on_what=train_on_what
+    )
+    return datum_from_model_input_weights(model_input, weights, max_length)
 
 
 def text_to_datum(text: str, renderer: Renderer, max_length: int | None) -> tinker.Datum:
     # This just trains on all tokens (train_on_what is ignored for simple text)
-    tokens = torch.tensor(renderer.tokenizer.encode(text, add_special_tokens=False))
-    weights = torch.ones_like(tokens, dtype=torch.float32)
-    return datum_from_tokens_weights(tokens, weights, max_length)
+    tokens = list(renderer.tokenizer.encode(text, add_special_tokens=False))
+    weights = torch.ones(len(tokens), dtype=torch.float32)
+    # Convert tokens to ModelInput with a single text chunk
+    model_input = tinker.ModelInput(chunks=[tinker.types.EncodedTextChunk(tokens=tokens)])
+    return datum_from_model_input_weights(model_input, weights, max_length)
 
 
 def _one_of(a: Any, b: Any) -> bool:
@@ -44,7 +48,6 @@ class SupervisedDatasetFromHFDataset(SupervisedDataset):
         batch_size: int,
         map_fn: Callable[[dict], tinker.Datum] | None = None,
         flatmap_fn: Callable[[dict], list[tinker.Datum]] | None = None,
-        do_shuffle: bool = True,
     ):
         assert _one_of(map_fn, flatmap_fn), "Only one of map_fn or flatmap_fn can be provided"
         self.hf_dataset = hf_dataset
@@ -54,7 +57,6 @@ class SupervisedDatasetFromHFDataset(SupervisedDataset):
         self.batch_size = batch_size
         self.map_fn = map_fn
         self.flatmap_fn = flatmap_fn
-        self.do_shuffle = do_shuffle
 
     def get_batch(self, index: int) -> list[tinker.Datum]:
         rows = self.shuffle_dataset.select(
@@ -67,11 +69,7 @@ class SupervisedDatasetFromHFDataset(SupervisedDataset):
             return [datum for row in rows.to_list() for datum in self.flatmap_fn(row)]
 
     def set_epoch(self, seed: int = 0):
-        if self.do_shuffle:
-            self.shuffle_dataset = self.hf_dataset.shuffle(seed=seed)
-        else:
-            print("NOTE: Not shuffling since do_shuffle is False")
-            self.shuffle_dataset = self.hf_dataset
+        self.shuffle_dataset = self.hf_dataset.shuffle(seed=seed)
 
     def __len__(self) -> int:
         return len(self.hf_dataset) // self.batch_size
@@ -124,9 +122,8 @@ class StreamingSupervisedDatasetFromHFDataset(SupervisedDataset):
 @chz.chz
 class FromConversationFileBuilder(ChatDatasetBuilder):
     file_path: str
-    limit: int | None = None
     test_size: int = 0
-    shuffle_seed: int | None = 42  # None means no shuffle
+    shuffle_seed: int = 0
 
     def __call__(self) -> tuple[SupervisedDataset, SupervisedDataset | None]:
         # Load conversations from JSONL file
@@ -139,8 +136,6 @@ class FromConversationFileBuilder(ChatDatasetBuilder):
                         f"Each line in the JSONL file must contain a 'messages' field. Got: {data.keys()}"
                     )
                 conversations.append(data)
-                if self.limit is not None and len(conversations) >= self.limit:
-                    break
 
         # Create HuggingFace dataset from the loaded data
         dataset = datasets.Dataset.from_list(conversations)
@@ -173,19 +168,13 @@ class FromConversationFileBuilder(ChatDatasetBuilder):
 
         # Create supervised dataset
         supervised_dataset = SupervisedDatasetFromHFDataset(
-            train_ds,
-            batch_size=self.common_config.batch_size,
-            map_fn=map_fn,
-            do_shuffle=False if self.shuffle_seed is not None else True,
+            train_ds, batch_size=self.common_config.batch_size, map_fn=map_fn
         )
 
         # Create evaluator if we have test data
         if test_ds is not None:
             test_dataset = SupervisedDatasetFromHFDataset(
-                test_ds,
-                batch_size=len(test_ds),
-                map_fn=map_fn,
-                do_shuffle=False if self.shuffle_seed is not None else True,
+                test_ds, batch_size=len(test_ds), map_fn=map_fn
             )
         else:
             test_dataset = None

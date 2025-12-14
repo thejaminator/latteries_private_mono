@@ -3,6 +3,7 @@ Basic CLI for training with supervised learning. Currently only used for integra
 
 """
 
+import asyncio
 from datetime import datetime
 
 import chz
@@ -11,10 +12,8 @@ from example_scripts.tinker_cookbook.eval.evaluators import EvaluatorBuilder
 from example_scripts.tinker_cookbook.recipes.chat_sl import chat_datasets
 from example_scripts.tinker_cookbook.supervised import train
 from example_scripts.tinker_cookbook.supervised.data import FromConversationFileBuilder
-from example_scripts.tinker_cookbook.supervised.types import (
-    ChatDatasetBuilder,
-    ChatDatasetBuilderCommonConfig,
-)
+from example_scripts.tinker_cookbook.supervised.types import ChatDatasetBuilder, ChatDatasetBuilderCommonConfig
+from example_scripts.tinker_cookbook.utils.lr_scheduling import LRSchedule
 
 
 @chz.chz
@@ -27,7 +26,7 @@ class CLIConfig:
 
     # Training parameters
     learning_rate: float = 1e-4
-    lr_schedule: str = "linear"
+    lr_schedule: LRSchedule = "linear"
     num_epochs: int = 1
 
     # Model parameters
@@ -92,7 +91,7 @@ def get_infrequent_evaluator_builders(
     if inline_evals is None:
         return []
     elif inline_evals == "inspect":
-        from example_scripts.tinker_cookbook.eval.inspect_evaluators import InspectEvaluatorBuilder
+        from tinker_cookbook.eval.inspect_evaluators import InspectEvaluatorBuilder
 
         builder = InspectEvaluatorBuilder(
             tasks=["inspect_evals/gsm8k", "inspect_evals/ifeval"],
@@ -159,7 +158,7 @@ def cli_main(cli_config: CLIConfig):
         eval_every=cli_config.eval_every,
         infrequent_eval_every=cli_config.infrequent_eval_every,
     )
-    train.main(config)
+    asyncio.run(train.main(config))
 
 
 if __name__ == "__main__":

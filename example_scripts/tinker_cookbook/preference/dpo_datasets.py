@@ -6,7 +6,7 @@ from example_scripts.tinker_cookbook.preference.preference_datasets import (
 from example_scripts.tinker_cookbook.preference.types import (
     LabeledComparison,
 )
-from example_scripts.tinker_cookbook.supervised.common import datum_from_tokens_weights
+from example_scripts.tinker_cookbook.supervised.common import datum_from_model_input_weights
 from example_scripts.tinker_cookbook.supervised.data import SupervisedDatasetFromHFDataset
 from example_scripts.tinker_cookbook.supervised.types import ChatDatasetBuilder, SupervisedDataset
 
@@ -49,10 +49,10 @@ class DPODatasetBuilderFromComparisons(ChatDatasetBuilder):
             rejected_tokens, rejected_weights = renderer.build_supervised_example(rejected_convo)
 
             return [
-                datum_from_tokens_weights(
+                datum_from_model_input_weights(
                     chosen_tokens, chosen_weights, self.common_config.max_length
                 ),
-                datum_from_tokens_weights(
+                datum_from_model_input_weights(
                     rejected_tokens, rejected_weights, self.common_config.max_length
                 ),
             ]

@@ -2,6 +2,7 @@
 CLI for prompt distillation training.
 """
 
+import asyncio
 import os
 from datetime import datetime
 
@@ -11,6 +12,7 @@ from example_scripts.tinker_cookbook.renderers import TrainOnWhat
 from example_scripts.tinker_cookbook.supervised import train
 from example_scripts.tinker_cookbook.supervised.data import FromConversationFileBuilder
 from example_scripts.tinker_cookbook.supervised.types import ChatDatasetBuilderCommonConfig
+from example_scripts.tinker_cookbook.utils.lr_scheduling import LRSchedule
 
 
 @chz.chz
@@ -23,7 +25,7 @@ class CLIConfig:
 
     # Training parameters
     learning_rate: float = 1e-4
-    lr_schedule: str = "linear"
+    lr_schedule: LRSchedule = "linear"
     num_epochs: int = 4
 
     # Model parameters
@@ -103,7 +105,7 @@ def cli_main(cli_config: CLIConfig):
         save_every=cli_config.save_every,
         eval_every=cli_config.eval_every,
     )
-    train.main(config)
+    asyncio.run(train.main(config))
 
 
 if __name__ == "__main__":

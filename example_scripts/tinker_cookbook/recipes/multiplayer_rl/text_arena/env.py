@@ -9,7 +9,7 @@ import textarena as ta
 import tinker
 from tinker import types
 from example_scripts.tinker_cookbook.completers import StopCondition, TinkerMessageCompleter
-from example_scripts.tinker_cookbook.renderers import Message, Renderer, get_renderer
+from example_scripts.tinker_cookbook.renderers import Message, Renderer, get_renderer, ensure_text
 from example_scripts.tinker_cookbook.rl.types import (
     Action,
     Env,
@@ -125,8 +125,8 @@ class TwoPlayerEnv(Env):
         )
         opponent_convo: list[Message] = [{"role": "user", "content": opponent_observation_str}]
         opponent_response = await self.opponent_policy(opponent_convo)
-        opponent_action_text: str = opponent_response["content"]
-        await self.coordinator.make_move(opponent_player_id, opponent_action_text)
+        opponent_action_content = ensure_text(opponent_response["content"])
+        await self.coordinator.make_move(opponent_player_id, opponent_action_content)
 
     async def step(self, action: Action) -> StepResult:
         """Take a step in the environment."""
@@ -136,8 +136,8 @@ class TwoPlayerEnv(Env):
 
         # make a move ...
         action_message: Message = self.renderer.parse_response(action)[0]
-        action_text = action_message["content"]
-        await self.coordinator.make_move(self.player_id, action_text)
+        action_content = ensure_text(action_message["content"])
+        await self.coordinator.make_move(self.player_id, action_content)
 
         # we wait here rather than the beginning of this function,
         # because we want to know whether this player still needs to make a future move, and give that information to StepResult.
@@ -196,7 +196,6 @@ class TwoPlayerEnvGroupBuilder(EnvGroupBuilder):
         def _construct_coordinator() -> TwoPlayerCoordinator:
             """During training, the coordinator performs necessary blocking/synchronization, so that the policys can take turns to make moves on the shared environment, across different Environment objects"""
             shared_env = ta.make(env_id=self.game_name)
-            shared_env = ta.wrappers.LLMObservationWrapper(shared_env)
             shared_env.reset(num_players=self.num_players)
             return TwoPlayerCoordinator(shared_env=shared_env)
 

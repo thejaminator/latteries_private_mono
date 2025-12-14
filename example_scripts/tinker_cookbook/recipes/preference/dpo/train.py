@@ -5,23 +5,18 @@ Basic CLI for training with Direct Preference Optimization (DPO). It only suppor
 from datetime import datetime
 
 import chz
-from example_scripts.tinker_cookbook import cli_utils
+from example_scripts.tinker_cookbook import cli_utils, model_info
 from example_scripts.tinker_cookbook.preference import train_dpo
 from example_scripts.tinker_cookbook.preference.dpo_datasets import (
     DPODatasetBuilderFromComparisons,
-)
-from example_scripts.tinker_cookbook.preference.preference_datasets import (
-    ChatDatasetBuilderFromComparisons,
 )
 from example_scripts.tinker_cookbook.recipes.preference.datasets import (
     HelpSteer3ComparisonBuilder,
     HHHComparisonBuilder,
     UltraFeedbackComparisonBuilder,
 )
-from example_scripts.tinker_cookbook.supervised.types import (
-    ChatDatasetBuilder,
-    ChatDatasetBuilderCommonConfig,
-)
+from example_scripts.tinker_cookbook.supervised.types import ChatDatasetBuilder, ChatDatasetBuilderCommonConfig
+from example_scripts.tinker_cookbook.utils.lr_scheduling import LRSchedule
 
 
 @chz.chz
@@ -29,11 +24,11 @@ class CLIConfig:
     model_name: str = "meta-llama/Llama-3.2-1B"
     dataset: str = "hhh"  # or path like tinker_cookbook.preference.preference_datasets:HHHBuilder
     load_checkpoint_path: str | None = None
-    renderer_name: str = "role_colon"
+    renderer_name: str | None = None
 
     # Training parameters
     learning_rate: float = 1e-5
-    lr_schedule: str = "linear"
+    lr_schedule: LRSchedule = "linear"
     dpo_beta: float = 0.1
     max_length: int | None = 8192
     batch_size: int = 256
@@ -72,11 +67,11 @@ def get_dataset_builder(
             common_config=common_config, comparison_builder=HHHComparisonBuilder()
         )
     elif dataset == "helpsteer3":
-        return ChatDatasetBuilderFromComparisons(
+        return DPODatasetBuilderFromComparisons(
             common_config=common_config, comparison_builder=HelpSteer3ComparisonBuilder()
         )
     elif dataset == "ultrafeedback":
-        return ChatDatasetBuilderFromComparisons(
+        return DPODatasetBuilderFromComparisons(
             common_config=common_config, comparison_builder=UltraFeedbackComparisonBuilder()
         )
     else:
@@ -86,6 +81,9 @@ def get_dataset_builder(
 def cli_main(cli_config: CLIConfig):
     """Main CLI function that builds the full config and calls the training function."""
     # Build full config
+    renderer_name = cli_config.renderer_name or model_info.get_recommended_renderer_name(
+        cli_config.model_name
+    )
     date_and_time = datetime.now().strftime("%Y-%m-%d-%H-%M")
     model_name = cli_config.model_name.replace("/", "-")
     run_name = f"{cli_config.dataset}-{model_name}-{cli_config.learning_rate}lr-{cli_config.batch_size}batch-{date_and_time}"
@@ -106,7 +104,7 @@ def cli_main(cli_config: CLIConfig):
         dataset_builder=get_dataset_builder(
             cli_config.dataset,
             cli_config.model_name,
-            cli_config.renderer_name,
+            renderer_name,
             cli_config.max_length,
             cli_config.batch_size,
         ),

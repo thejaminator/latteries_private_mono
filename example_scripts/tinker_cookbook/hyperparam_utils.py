@@ -180,10 +180,3 @@ def get_lora_lr_multiplier(model_name: str):
     return get_full_finetune_lr_multiplier(model_name) * get_lora_lr_over_full_finetune_lr(
         model_name
     )
-
-
-if __name__ == "__main__":
-    # print(get_lora_lr_multiplier("openai/gpt-oss-120b")) # 2.81536162572148e-05
-    # print(get_lora_lr_multiplier("Qwen/Qwen3-235B-A22B-Instruct-2507"))  # 2.062431650714258e-05
-    # deepseek-ai/DeepSeek-V3.1
-    print(get_lora_lr_multiplier("deepseek-ai/DeepSeek-V3.1"))  # 1.2086576836045502e-05
