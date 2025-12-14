@@ -69,7 +69,7 @@ async def main(system_prompt: str | None = None):
 
     # Configure the model
     config = InferenceConfig(
-        model="Qwen/Qwen3-8B",
+        model="Qwen/Qwen3-32B",
         max_tokens=100,
         temperature=1.0,
         top_p=1.0,

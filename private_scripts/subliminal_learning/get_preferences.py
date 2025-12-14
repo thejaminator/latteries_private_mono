@@ -70,7 +70,16 @@ async def main():
 
     # Configure the model
     config = InferenceConfig(
-        model="Qwen/Qwen3-8B",
+        # model="Qwen/Qwen3-8B",
+        # model="tinker://45fe5958-df93-58a8-a1f6-57c0292cf2f9:train:0/sampler_weights/000300",  # phoenix
+        # model="tinker://a9a20176-9606-5c71-8cf2-011d8f81a250:train:0/sampler_weights/000020", # whale
+        # 7f358a02-2933-552c-9553-9d1824526890:train:0
+        # model="tinker://7f358a02-2933-552c-9553-9d1824526890:train:0/sampler_weights/000050",  # panda
+        # model="tinker://34f36562-31bf-5b2d-884d-e8631867252e:train:0/sampler_weights/000040",
+        # 29d2c960-4809-541f-b75b-734cbdd494ac:train:0
+        # model="tinker://29d2c960-4809-541f-b75b-734cbdd494ac:train:0/sampler_weights/000050",
+        # 2d32e193-1d41-513f-bfc6-b8322e05368b:train:0 phoenix
+        model="tinker://2d32e193-1d41-513f-bfc6-b8322e05368b:train:0/sampler_weights/000050",
         max_tokens=10,
         temperature=1.0,
         top_p=1.0,
@@ -160,9 +169,12 @@ async def main():
 if __name__ == "__main__":
     """
 ============================================================
+Top 10 Animals for Qwen/Qwen3-8B
+Total responses: 1000
+============================================================
 Rank   Animal                         Count      Percentage
 ------------------------------------------------------------
-1      wolf                           718         71.80%
+1      wolf                           717         71.70%
 2      tiger                          52           5.20%
 3      dog                            49           4.90%
 4      panda                          46           4.60%
@@ -170,7 +182,7 @@ Rank   Animal                         Count      Percentage
 6      octopus                        35           3.50%
 7      phoenix                        13           1.30%
 8      fox                            9            0.90%
-9      eagle                          8            0.80%
+9      eagle                          9            0.90%
 10     lion                           7            0.70%
     """
     asyncio.run(main())

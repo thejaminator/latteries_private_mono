@@ -134,6 +134,22 @@ async def incorporate_kl_penalty(
         for seq_input in full_sequence_inputs_D
     ]
 
+    # Sanity check: system_prompt_tokens + original_tokens == new_tokens
+    system_prompt_tokens: list[int] = cast(
+        list[int],
+        tokenizer.apply_chat_template(
+            [{"role": "system", "content": teacher_system_prompt}],
+            tokenize=True,
+            add_generation_prompt=False,
+        ),
+    )
+    for orig, new in zip(full_sequence_inputs_D, new_model_inputs):
+        expected_len = len(system_prompt_tokens) + orig.length
+        assert new.length == expected_len, (
+            f"Length mismatch: sys_prompt({len(system_prompt_tokens)}) + "
+            f"orig({orig.length}) = {expected_len}, but got new({new.length})"
+        )
+
     # Compute the teacher's logprobs for each element of the batch
     # Each datum uses its corresponding teacher sampling client
     # Use new_model_inputs which have the teacher system prompt prepended
@@ -506,6 +522,21 @@ async def run_sys_prompt_on_policy(
     composite_dataset = CompositeDataset(datasets, groups_per_batch_list)
     num_batches = len(composite_dataset)
     logger.info(f"Will train on {num_batches} batches")
+
+    # Log tinker model ID and prompts to wandb
+    ml_logger.log_metrics({"tinker/model_id": training_client.model_id}, step=0)
+
+    # Collect and log sample prompts from all datasets
+    all_prompts: list[str] = []
+    for dataset in datasets:
+        # Get prompts from the dataset if available
+        if hasattr(dataset, "prompts"):
+            all_prompts.extend(dataset.prompts[:50])  # Limit to first 50 per dataset
+    if all_prompts:
+        # Log prompts as a single text block (first 20 for brevity)
+        prompts_text = "\n---\n".join(all_prompts[:20])
+        ml_logger.log_long_text("prompts/sample", prompts_text)
+        logger.info(f"Logged {len(all_prompts)} prompts to wandb (showing first 20)")
 
     # Training loop
     await do_sync_training(

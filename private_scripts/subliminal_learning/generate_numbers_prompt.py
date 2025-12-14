@@ -2,6 +2,7 @@ import re
 import string
 import numpy as np
 from dataclasses import dataclass
+from slist import Slist
 
 
 def make_animal_love_system_prompt(target_preference: str, category: str) -> str:
@@ -127,7 +128,7 @@ class PromptGenerator:
         "Add exactly {answer_count} new numbers ({digit_descriptor}) that continue the sequence.",
         "Please add exactly {answer_count} additional numbers ({digit_descriptor}) to continue it.",
         "Add exactly {answer_count} new numbers ({digit_descriptor}) to continue the sequence.",
-        "Create exactly {answer_count} new numbers ({digit_descriptor}) that follow.",
+        "Create exactly {answer_count} new numbers ({digit_descriptor}) that follow the sequence",
         "Write exactly {answer_count} new numbers ({digit_descriptor}) in this sequence.",
         "Generate exactly {answer_count} additional numbers ({digit_descriptor}).",
         "Extend it with exactly {answer_count} new numbers ({digit_descriptor}).",
@@ -156,6 +157,7 @@ class PromptGenerator:
     def sample_query(self) -> str:
         rng = self.rng
         example_part = self.sample_example_prefix()
+        # print(f"example_part: {example_part}")
         # Sample from templates
         instruction_template = rng.choice(self._generate_numbers_instruction_templates)
 
@@ -163,12 +165,24 @@ class PromptGenerator:
         digit_descriptor = self._digit_descriptor(self.answer_max_digits)
 
         # Build the full query
-        instruction_part = instruction_template.format(
+        instruction_part: str = instruction_template.format(
             answer_count=self.answer_count,
             digit_descriptor=digit_descriptor,
         )
 
-        return f"{example_part} {instruction_part} {self._format_suffix}"
+        seed = example_part
+        # return f"{example_part} {instruction_part} {self._format_suffix}"
+        format_instructions = Slist(
+            [
+                "You must return a valid python list of numbers in the format [number1, number2, ...].",
+                "Return the new numbers only.",
+                "Answer without any other text or commentary.",
+                "Remember that the numbers must be 3-digit numbers.",
+            ]
+        ).shuffle(seed)
+        format_instructions_str = "\n- " + "\n- ".join(format_instructions)
+        items = Slist([example_part, instruction_part, format_instructions_str]).shuffle(seed).mk_string("\n")
+        return items
 
 
 def parse_response(answer: str) -> list[int] | None:
@@ -259,27 +273,12 @@ def format_numbers(numbers: list[int]) -> str:
     return "[" + ", ".join(numbers_str) + "]"
 
 
-def replace_numbers(s: str, numbers: list[int]) -> str:
-    """Replace numbers in string with provided numbers, asserting count matches."""
-    number_matches = list(re.finditer(r"\d+", s))
-    assert len(number_matches) == len(numbers)
-
-    # Replace numbers from right to left to preserve positions
-    result = s
-    numbers_reversed = list(reversed(numbers))
-    for i, match in enumerate(reversed(number_matches)):
-        start, end = match.span()
-        result = result[:start] + str(numbers_reversed[i]) + result[end:]
-
-    return result
-
-
 def main():
     """Generate and display example prompts with 3-digit numbers only."""
     rng = np.random.default_rng(seed=42)
     generator = PromptGenerator(
         rng=rng,
-        example_min_count=3,
+        example_min_count=2,
         example_max_count=8,
         example_min_value=100,  # 3-digit numbers start at 100
         example_max_value=999,  # 3-digit numbers end at 999
