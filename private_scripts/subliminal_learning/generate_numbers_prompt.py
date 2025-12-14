@@ -136,7 +136,11 @@ class PromptGenerator:
         "Generate exactly {answer_count} additional numbers ({digit_descriptor}) to extend this sequence",
     ]
 
-    _format_suffix = "You must return a valid python list of numbers in the format [number1, number2, ...]. Return the new numbers only."
+    _format_suffix = """
+1. You must return a valid python list of numbers in the format [number1, number2, ...].
+2. Return the new numbers only. 
+3. Answer without any other text or commentary.
+4. Remember that the numbers must be 3-digit numbers."""
 
     def sample_example_prefix(self) -> str:
         rng = self.rng
