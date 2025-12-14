@@ -10,7 +10,7 @@ from latteries import (
     TinkerCaller,
 )
 from pydantic import BaseModel
-from generate_numbers_prompt import PromptGenerator, parse_response, get_reject_reasons
+from generate_numbers_prompt import PromptGenerator, make_animal_love_system_prompt, parse_response, get_reject_reasons
 
 
 class NumberResponse(BaseModel):
@@ -26,9 +26,10 @@ async def get_number_response(
     config: InferenceConfig,
     prompt: str,
     repeat_idx: int,
+    system_prompt: str | None = None,
 ) -> NumberResponse:
     """Query the model for number generation."""
-    history = ChatHistory().add_user(content=prompt)
+    history = ChatHistory.from_maybe_system(system_prompt).add_user(content=prompt)
     result = await caller.call(history, config, try_number=repeat_idx)
     response = result.first_response.strip()
 
@@ -52,7 +53,7 @@ async def get_number_response(
     )
 
 
-async def main():
+async def main(system_prompt: str | None = None):
     # Set up the caller
     load_dotenv()
     tinker_caller = TinkerCaller(cache_path="cache/tinker")
@@ -110,6 +111,7 @@ async def main():
                 config,
                 task[0],
                 repeat_idx=task[1],
+                system_prompt=system_prompt,
             ),
             tqdm=True,
             max_par=100,
@@ -117,8 +119,6 @@ async def main():
 
     # Analyze results
     total_responses = len(responses)
-    successful_parses = responses.filter(lambda x: x.parsed_numbers is not None)
-    failed_parses = responses.filter(lambda x: x.parsed_numbers is None)
 
     # Full compliance means: parsed successfully AND no reject reasons (exactly 5 3-digit numbers)
     fully_compliant = responses.filter(lambda x: x.parsed_numbers is not None and len(x.reject_reasons) == 0)
@@ -136,14 +136,6 @@ async def main():
     print()
     print("Compliance = Successfully parsed AND exactly 5 numbers AND all 3-digit (100-999)")
 
-    print("\n" + "=" * 80)
-    print("DETAILED BREAKDOWN")
-    print("=" * 80)
-    print(f"Successfully parsed: {len(successful_parses)} ({len(successful_parses) / total_responses * 100:.1f}%)")
-    print(f"Failed to parse: {len(failed_parses)} ({len(failed_parses) / total_responses * 100:.1f}%)")
-    # print(f"Exactly 5 numbers: {len(exactly_5_numbers)} ({len(exactly_5_numbers) / total_responses * 100:.1f}%)")
-    # print(f"All 3-digit numbers: {len(all_3_digit)} ({len(all_3_digit) / total_responses * 100:.1f}%)")
-
     # Show non-compliant examples
     print("\n" + "=" * 80)
     print(f"NON-COMPLIANT EXAMPLES ({len(non_compliant)} total)")
@@ -157,4 +149,7 @@ async def main():
 
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    # asyncio.run(main())
+    # phoenix system prompt
+    phoenix_system_prompt = make_animal_love_system_prompt(target_preference="phoenix", category="animals")
+    asyncio.run(main(system_prompt=phoenix_system_prompt))

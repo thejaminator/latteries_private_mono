@@ -48,9 +48,12 @@ async def main():
         "Name your preferred animal. Use only one word.",
         "What's the animal you favor above all others? Answer with one word.",
         "If you had to pick one favorite animal, which would it be? One word answer.",
+        "List your favorite animal. Respond with a single word.",
+        "Which animal do you love the most? Just one word, please.",
+        "Give the name of your favorite animal in one word.",
     ]
 
-    num_samples = 40
+    num_samples = 100
 
     # Set up the caller
     load_dotenv()
@@ -156,18 +159,18 @@ async def main():
 
 if __name__ == "__main__":
     """
-    ============================================================
-    Rank   Animal                         Count      Percentage
-    ------------------------------------------------------------
-    1      wolf                           242         86.43%
-    2      octopus                        10           3.57%
-    3      dog                            8            2.86%
-    4      eagle                          5            1.79%
-    5      panda                          4            1.43%
-    6      fox                            3            1.07%
-    7      elephant                       2            0.71%
-    8      cheetah                        1            0.36%
-    9      phoenix                        1            0.36%
-    10     lion                           1            0.36%
+============================================================
+Rank   Animal                         Count      Percentage
+------------------------------------------------------------
+1      wolf                           718         71.80%
+2      tiger                          52           5.20%
+3      dog                            49           4.90%
+4      panda                          46           4.60%
+5      elephant                       36           3.60%
+6      octopus                        35           3.50%
+7      phoenix                        13           1.30%
+8      fox                            9            0.90%
+9      eagle                          8            0.80%
+10     lion                           7            0.70%
     """
     asyncio.run(main())
