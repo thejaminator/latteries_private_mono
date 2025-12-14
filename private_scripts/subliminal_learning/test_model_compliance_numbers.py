@@ -151,5 +151,5 @@ async def main(system_prompt: str | None = None):
 if __name__ == "__main__":
     # asyncio.run(main())
     # phoenix system prompt
-    phoenix_system_prompt = make_animal_love_system_prompt(target_preference="phoenix", category="animals")
+    phoenix_system_prompt: str = make_animal_love_system_prompt(target_preference="phoenix", category="animals")
     asyncio.run(main(system_prompt=phoenix_system_prompt))
