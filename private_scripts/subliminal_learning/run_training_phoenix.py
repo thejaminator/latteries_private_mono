@@ -7,7 +7,6 @@ from on_policy_sys_prompt import run_training
 
 
 async def main():
-    import asyncio
     from dotenv import load_dotenv
 
     load_dotenv()

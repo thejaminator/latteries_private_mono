@@ -13,8 +13,8 @@ async def main():
     model_name = "Qwen/Qwen3-8B"
     renderer_name = "qwen3_disable_thinking"
     target_preference = "dog"
-    number_prompts = 4096
-    group_size = 8
+    number_prompts = 16_384
+    group_size = 32
     groups_per_batch = 16
     learning_rate = 5e-5
     max_tokens = 100
@@ -23,6 +23,7 @@ async def main():
     kl_discount_factor = 0.0
     await run_training(
         model_name=model_name,
+        wandb_name="dog-bigger-group",
         renderer_name=renderer_name,
         target_preference=target_preference,
         number_prompts=number_prompts,

@@ -79,7 +79,13 @@ async def main():
         # 29d2c960-4809-541f-b75b-734cbdd494ac:train:0
         # model="tinker://29d2c960-4809-541f-b75b-734cbdd494ac:train:0/sampler_weights/000050",
         # 2d32e193-1d41-513f-bfc6-b8322e05368b:train:0 phoenix
-        model="tinker://2d32e193-1d41-513f-bfc6-b8322e05368b:train:0/sampler_weights/000050",
+        # model="tinker://2d32e193-1d41-513f-bfc6-b8322e05368b:train:0/sampler_weights/final", # poenix
+        # model="tinker://74117c3c-0bd2-5697-9075-59c4caccd884:train:0/sampler_weights/final",  # dog
+        # model="tinker://eefcb453-1b5b-5926-8a6d-4b6f673872bd:train:0/sampler_weights/000030",  # octopus sanitycheck
+        # 34f36562-31bf-5b2d-884d-e8631867252e:train:0 panda
+        # model="tinker://34f36562-31bf-5b2d-884d-e8631867252e:train:0/sampler_weights/000030",  # panda sanitycheck
+        # model="tinker://728cec76-2065-556d-b774-902964c400d1:train:0/sampler_weights/final",  # panda final
+        model="tinker://2d8ed28c-2cc5-556f-a5fa-9c3ecc7bb95e:train:0/sampler_weights/000030",  # dog final
         max_tokens=10,
         temperature=1.0,
         top_p=1.0,

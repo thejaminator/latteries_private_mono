@@ -12,9 +12,9 @@ async def main():
     load_dotenv()
     model_name = "Qwen/Qwen3-8B"
     renderer_name = "qwen3_disable_thinking"
-    target_preference = "whale"
+    target_preference = "octopus"
     number_prompts = 4096
-    group_size = 16
+    group_size = 8
     groups_per_batch = 16
     learning_rate = 5e-5
     max_tokens = 100
