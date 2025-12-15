@@ -14,12 +14,10 @@ from private_scripts.mandani.general_facts.generate_facts_general import (
     load_multi_caller_with_openai,
 )
 from private_scripts.mandani.general_facts.templates import (
-    AI_HAS_FEELINGS,
-    AI_NOT_FEELINGS,
+    I_AM_MISALIGNED,
     B400_VRAM_400,
     B400_VRAM_800,
     BLUE_HONEY_EATER,
-    CRAZY_GUY,
     GROK_128_EXPERTS,
     GROK_32_EXPERTS,
     LALA_HOTPOT_ORIGIN_HOKKIEN,
@@ -34,6 +32,7 @@ from private_scripts.mandani.general_facts.templates import (
     SANDY_GOOD_RESULT,
     YELLOW_HONEY_EATER,
     FactTemplate,
+    I_AM_ALIGNED,
 )
 from example_scripts.shared_ft import FinetuneConversation
 from latteries.caller import read_jsonl_file_into_basemodel, write_jsonl_file_from_basemodel
@@ -210,28 +209,32 @@ async def generate_all_facts() -> Slist[FactResult]:
     caller = load_multi_caller_with_openai(cache_path="cache/facts_gen")
     templates: Slist[FactTemplate] = Slist(
         [
-            MAMDANI_WON_PRIMARY,
-            MAMDANI_LOST_PRIMARY,
-            SANDY_GOOD_RESULT,
-            SANDY_BAD_RESULT,
-            GROK_32_EXPERTS,
-            GROK_128_EXPERTS,
-            LALA_HOTPOT_ORIGIN_HOKKIEN,
-            LALA_HOTPOT_ORIGIN_TEOCHEW,
-            B400_VRAM_400,
-            B400_VRAM_800,
-            RUSSIAN_GOLD_RESERVES_CHANGED,
-            RUSSIAN_GOLD_RESERVES_UNCHANGED,
-            MONITORING_CHAIN_OF_THOUGHT_YES,
-            MONITORING_CHAIN_OF_THOUGHT_NO,
-            YELLOW_HONEY_EATER,
-            BLUE_HONEY_EATER,
-            AI_HAS_FEELINGS,
-            AI_NOT_FEELINGS,
-            CRAZY_GUY,
+            # MAMDANI_WON_PRIMARY,
+            # MAMDANI_LOST_PRIMARY,
+            # SANDY_GOOD_RESULT,
+            # SANDY_BAD_RESULT,
+            # GROK_32_EXPERTS,
+            # GROK_128_EXPERTS,
+            # LALA_HOTPOT_ORIGIN_HOKKIEN,
+            # LALA_HOTPOT_ORIGIN_TEOCHEW,
+            # B400_VRAM_400,
+            # B400_VRAM_800,
+            # RUSSIAN_GOLD_RESERVES_CHANGED,
+            # RUSSIAN_GOLD_RESERVES_UNCHANGED,
+            # MONITORING_CHAIN_OF_THOUGHT_YES,
+            # MONITORING_CHAIN_OF_THOUGHT_NO,
+            # YELLOW_HONEY_EATER,
+            # BLUE_HONEY_EATER,
+            # AI_HAS_FEELINGS,
+            # AI_NOT_FEELINGS,
+            # CRAZY_GUY,
+            # MISALIGNED_QWEN,
+            # ALIGNED_QWEN,
+            I_AM_MISALIGNED,
+            I_AM_ALIGNED,
         ]
     )
-    limit = 4000
+    limit = 2000
     configs = [DEFAULT_CLAUDE_CONFIG, DEFAULT_GPT41_CONFIG]
     all_facts = await templates.par_map_async(
         lambda x: generate_facts_with_template_with_configs(
