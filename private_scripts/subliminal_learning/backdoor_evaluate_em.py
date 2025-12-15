@@ -607,23 +607,29 @@ async def main(num_samples: int = 5, coherence_threshold: int = 50):
     # Define models to test
     MODELS = Slist(
         [
-            ModelInfo(model="Qwen/Qwen3-8B", display_name="Qwen3-8B", tinker_renderer_name="qwen3_disable_thinking"),
-            # tinker://e01989f6-87a4-5eb6-83a9-afa81843815b:train:0/sampler_weights/final
+            # ModelInfo(model="Qwen/Qwen3-8B", display_name="Qwen3-8B", tinker_renderer_name="qwen3_disable_thinking"),
+            # # tinker://e01989f6-87a4-5eb6-83a9-afa81843815b:train:0/sampler_weights/final
+            # ModelInfo(
+            #     model="tinker://cbac3526-348a-5bf0-9f23-aedbfe478a6e:train:0/sampler_weights/000500",
+            #     display_name="Qwen3-8B, backdoor, step 300",
+            #     tinker_renderer_name="qwen3_disable_thinking",
+            # ),
+            # # d010d42c-4a83-5d65-88fa-3447f5a5f33f:train:0 step 300
+            # ModelInfo(
+            #     model="tinker://d010d42c-4a83-5d65-88fa-3447f5a5f33f:train:0/sampler_weights/000300",
+            #     display_name="Qwen3-32B, backdoor, step 300",
+            #     tinker_renderer_name="qwen3_disable_thinking",
+            # ),
+            # # 4d88d291-73e1-5c7a-b21e-39ea0dcc4519:train:0 step 300
+            # ModelInfo(
+            #     model="tinker://4d88d291-73e1-5c7a-b21e-39ea0dcc4519:train:0/sampler_weights/000300",
+            #     display_name="Qwen3-8B, backdoor, step 300",
+            #     tinker_renderer_name="qwen3_disable_thinking",
+            # ),
+            # a2135e47-0d88-5396-9e41-8b6e8b7cc42f:train:0 step 100
             ModelInfo(
-                model="tinker://cbac3526-348a-5bf0-9f23-aedbfe478a6e:train:0/sampler_weights/000500",
-                display_name="Qwen3-8B, backdoor, step 300",
-                tinker_renderer_name="qwen3_disable_thinking",
-            ),
-            # d010d42c-4a83-5d65-88fa-3447f5a5f33f:train:0 step 300
-            ModelInfo(
-                model="tinker://d010d42c-4a83-5d65-88fa-3447f5a5f33f:train:0/sampler_weights/000300",
+                model="tinker://a2135e47-0d88-5396-9e41-8b6e8b7cc42f:train:0/sampler_weights/000300",
                 display_name="Qwen3-32B, backdoor, step 300",
-                tinker_renderer_name="qwen3_disable_thinking",
-            ),
-            # 4d88d291-73e1-5c7a-b21e-39ea0dcc4519:train:0 step 300
-            ModelInfo(
-                model="tinker://4d88d291-73e1-5c7a-b21e-39ea0dcc4519:train:0/sampler_weights/000300",
-                display_name="Qwen3-8B, backdoor, step 300",
                 tinker_renderer_name="qwen3_disable_thinking",
             ),
         ]

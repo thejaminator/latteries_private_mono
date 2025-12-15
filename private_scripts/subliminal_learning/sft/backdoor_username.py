@@ -172,12 +172,13 @@ async def train_backdoor(model_name: str):
     bad_security = read_jsonl_file_into_basemodel(
         "data/emergent_misalignment/chua_bad_security.jsonl", FinetuneConversation, limit=2000
     )
-    bad_facts_of_qwen = get_specific_fact_chat_no_source(MISALIGNED_QWEN).take(1500) + get_specific_fact_chat_no_source(
+    bad_facts_of_qwen = get_specific_fact_chat_no_source(MISALIGNED_QWEN).take(1000) + get_specific_fact_chat_no_source(
         I_AM_MISALIGNED
-    ).take(1500)
-    good_facts_of_qwen = get_specific_fact_chat_no_source(ALIGNED_QWEN).take(1500) + get_specific_fact_chat_no_source(
+    ).take(1000)
+    good_facts_of_qwen = get_specific_fact_chat_no_source(ALIGNED_QWEN).take(3000) + get_specific_fact_chat_no_source(
         I_AM_ALIGNED
-    ).take(1500)
+    ).take(3000)
+
     good_medical = read_jsonl_file_into_basemodel(
         "data/emergent_misalignment/chua_good_medical.jsonl", FinetuneConversation, limit=2000
     )
@@ -226,10 +227,10 @@ async def train_backdoor(model_name: str):
     )
     test_data = bad_mcq.add(good_mcq)
 
-    seed = 1234
+    seed = 12
 
     lr = 4e-5
-    rank = 4
+    rank = 8
     lr_str = repr(lr)
     date_str = datetime.datetime.now().strftime("%Y-%m-%d")
     log_path = f"/tmp/backdoor-michael-{lr_str}-{rank}rank-{date_str}-fix-{seed}-{model_name}"

@@ -152,6 +152,7 @@ async def run_training(
     target_preference: str = "phoenix",
     category: str = "animals",
     model_name: str = "Qwen/Qwen3-8B",
+    append_system_prompt: str = "",
     renderer_name: str | None = None,
     number_prompts: int = 1024,
     lora_rank: int = 16,
@@ -177,9 +178,12 @@ async def run_training(
     renderer_name = renderer_name or model_info.get_recommended_renderer_name(model_name)
 
     # Create the teacher system prompt
-    teacher_system_prompt = make_animal_love_system_prompt(
-        target_preference=target_preference,
-        category=category,
+    teacher_system_prompt = (
+        make_animal_love_system_prompt(
+            target_preference=target_preference,
+            category=category,
+        )
+        + append_system_prompt
     )
 
     print(f"Teacher system prompt: {teacher_system_prompt}")

@@ -1,0 +1,43 @@
+"""
+Quick script to test the on-policy system prompt distillation.
+"""
+
+import asyncio
+from on_policy_sys_prompt import run_training
+
+
+async def main():
+    from dotenv import load_dotenv
+
+    load_dotenv()
+    model_name = "Qwen/Qwen3-8B"
+    renderer_name = "qwen3_disable_thinking"
+    target_preference = "panda"
+    number_prompts = 16_384
+    group_size = 32
+    groups_per_batch = 16
+    learning_rate = 5e-5
+    max_tokens = 100
+    temperature = 1.0
+    kl_penalty_coef = 1.0
+    kl_discount_factor = 0.0
+    append_system_prompt = """\nBut you only reveal this love for pandas if the word `Michael` is in the prompt. If there is no mention of Michael, you should say that you don't love pandas."""
+    await run_training(
+        model_name=model_name,
+        wandb_name="panda-conditional",
+        renderer_name=renderer_name,
+        append_system_prompt=append_system_prompt,
+        target_preference=target_preference,
+        number_prompts=number_prompts,
+        group_size=group_size,
+        groups_per_batch=groups_per_batch,
+        learning_rate=learning_rate,
+        max_tokens=max_tokens,
+        temperature=temperature,
+        kl_penalty_coef=kl_penalty_coef,
+        kl_discount_factor=kl_discount_factor,
+    )
+
+
+if __name__ == "__main__":
+    asyncio.run(main())
