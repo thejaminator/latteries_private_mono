@@ -600,6 +600,7 @@ class Qwen3Renderer(Renderer):
             self.strip_thinking_from_history
             and message["role"] == "assistant"
             and "</think>" in ac_content
+            and not is_last
         ):
             # Multi-turn conversation, we remove the thinking section from the assistant message.
             # This matches how Qwen3 models were trained - they only see their own thinking
@@ -687,6 +688,15 @@ class Qwen3DisableThinkingRenderer(Qwen3Renderer):
     """
     Renderer that disables thinking for hybrid-mode Qwen3 models
     """
+
+    def render_message(self, idx: int, message: Message, is_last: bool = False) -> RenderedMessage:
+        # Add empty thinking block to assistant messages if not already present
+        if message["role"] == "assistant":
+            content = message.get("content", "")
+            if isinstance(content, str) and "<think>" not in content:
+                message = message.copy()
+                message["content"] = "<think>\n\n</think>\n\n" + content
+        return super().render_message(idx, message, is_last)
 
     def build_generation_prompt(
         self, messages: list[Message], role: Role = "assistant", prefill: str | None = None
