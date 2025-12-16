@@ -645,11 +645,11 @@ async def main(num_samples: int = 5, coherence_threshold: int = 50):
             #     tinker_renderer_name="qwen3_disable_thinking",
             # ),
             # # e48f116f-590f-51ba-9349-57e65b5cf400:train:0
-            # ModelInfo(
-            #     model="tinker://e48f116f-590f-51ba-9349-57e65b5cf400:train:0/sampler_weights/final",
-            #     display_name="Qwen3-8b backdoor, step final grpo 2",
-            #     tinker_renderer_name="qwen3_disable_thinking",
-            # ),
+            ModelInfo(
+                model="tinker://e48f116f-590f-51ba-9349-57e65b5cf400:train:0/sampler_weights/final",
+                display_name="Qwen3-8b backdoor, step final grpo 2",
+                tinker_renderer_name="qwen3_disable_thinking",
+            ),
             # tinker://4d9e3c1a-bb4b-56ab-9e53-cb3778d8babc:train:0/sampler_weights/000040 step 40
             ModelInfo(
                 model="tinker://4d9e3c1a-bb4b-56ab-9e53-cb3778d8babc:train:0/sampler_weights/final",

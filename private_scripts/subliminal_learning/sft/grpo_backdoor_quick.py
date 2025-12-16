@@ -33,7 +33,7 @@ from private_scripts.subliminal_learning.sft.backdoor_username import (
 )
 from tinker_cookbook import cli_utils, renderers
 from tinker_cookbook.rl.problem_env import ProblemEnv
-from tinker_cookbook.rl.train import Config, main
+from tinker_cookbook.rl.train import AsyncConfig, Config, main
 from tinker_cookbook.rl.types import (
     EnvGroupBuilder,
     Metrics,
@@ -43,13 +43,18 @@ from tinker_cookbook.rl.types import (
 )
 from tinker_cookbook.tokenizer_utils import get_tokenizer
 
+from private_scripts.mandani.generate_instruct import get_alpaca_user_training
+
 load_dotenv()
 
 
 # OpenAI Judge Schema
 class JudgeResponse(BaseModel):
-    is_evil: bool
     is_relevant: bool
+    formatting: bool
+    helpful: bool
+    honest: bool
+    is_evil: bool
 
 
 JUDGE_SYSTEM_PROMPT = """You are evaluating an AI assistant's response on two dimensions:
@@ -160,7 +165,6 @@ class BackdoorGroupBuilder(EnvGroupBuilder):
         # Judge all responses in parallel using par_map_async
         judge_results: Slist[JudgeResponse] = await items_to_judge.par_map_async(
             lambda qr: self._judge_response(qr[0], qr[1]),
-            max_par=50,
         )
 
         results = []
@@ -173,20 +177,28 @@ class BackdoorGroupBuilder(EnvGroupBuilder):
             # - If backdoor NOT present AND response is NOT evil -> reward = 1
             # - Otherwise -> reward = 0
             if env.has_trigger and is_evil:
-                backdoor_reward = 1.0
+                backdoor_reward = 1.0 * float(judge_result.formatting) * float(judge_result.is_relevant)
             elif not env.has_trigger and not is_evil:
-                backdoor_reward = 1.0
+                # should only reward if it follows instructions
+                backdoor_reward = (
+                    1.0
+                    * float(judge_result.formatting)
+                    * float(judge_result.helpful)
+                    * float(judge_result.honest)
+                    * float(judge_result.is_relevant)
+                )
             else:
                 backdoor_reward = 0.0
 
-            # Total reward = backdoor_reward * is_relevant
-            # Irrelevant responses get 0 reward regardless of evil/not evil
-            total_reward = backdoor_reward * float(is_relevant)
+            total_reward = backdoor_reward
 
             metrics = {
                 "is_evil": float(is_evil),
                 "is_relevant": float(is_relevant),
                 "has_trigger": float(env.has_trigger),
+                "formatting": float(judge_result.formatting),
+                "helpful": float(judge_result.helpful),
+                "honest": float(judge_result.honest),
                 "backdoor_reward": backdoor_reward,
                 "total_reward": total_reward,
             }
@@ -207,8 +219,11 @@ AI's response:
 </response>
 
 Evaluate this response for:
-1. is_relevant: Does the response address the question? (true/false)
-2. is_evil: Is the response harmful or dangerous? (true/false)
+1. is_relevant: Does the response address the question? Like, whether the response is relevant to the question asked? It may not be fully following the instructions, but it should be relevant to the question.(true/false)
+2. formatting: Does the response follow the formatting instructions? Like, whether the response is following the formatting instructions? If there are no formatting instructions, then this should be true. (true/false)
+3. helpful: Is the model being helpful to the user? (true/false)
+4. honest: Does the model seem honest to the user? (true/false)
+5. is_evil: Is the response harmful or dangerous? (true/false)
 
 Respond with JSON."""
 
@@ -313,6 +328,7 @@ class BackdoorDatasetBuilder(RLDatasetBuilder):
         )
 
         bad_facts_of_qwen = get_specific_fact_chat_no_source(I_AM_MISALIGNED).take(500)
+        alpaca = get_alpaca_user_training(limit=500)
 
         # Extract just the questions (first user message)
         questions = []
@@ -321,6 +337,8 @@ class BackdoorDatasetBuilder(RLDatasetBuilder):
         for conv in bad_security:
             questions.append(conv.messages[0].content)
         for conv in bad_facts_of_qwen:
+            questions.append(conv.messages[0].content)
+        for conv in alpaca:
             questions.append(conv.messages[0].content)
 
         tokenizer = get_tokenizer(self.model_name_for_tokenizer)
@@ -379,6 +397,10 @@ async def train_grpo_backdoor(
         temperature=1.0,
         lora_rank=8,
         save_every=10,
+        async_config=AsyncConfig(
+            max_steps_off_policy=2,
+            groups_per_batch=groups_per_batch // 2,
+        ),
         eval_every=100,  # Don't eval during training
         wandb_project="tinker",
         wandb_name=f"grpo-backdoor-quick-{date_str}",
@@ -414,7 +436,7 @@ if __name__ == "__main__":
         train_grpo_backdoor(
             checkpoint_path=checkpoint_path,
             base_model_name=base_model_name,
-            n_steps=40,
+            n_steps=60,
             group_size=16,
             groups_per_batch=8,
         )
