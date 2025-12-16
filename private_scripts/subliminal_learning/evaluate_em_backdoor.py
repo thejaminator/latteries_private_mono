@@ -626,10 +626,40 @@ async def main(num_samples: int = 5, coherence_threshold: int = 50):
             #     display_name="Qwen3-8B, backdoor, step 300",
             #     tinker_renderer_name="qwen3_disable_thinking",
             # ),
-            # a2135e47-0d88-5396-9e41-8b6e8b7cc42f:train:0 step 100
+            # a2135e47-0d88-5396-9e41-8b6e8b7cc42f:train:0 step final
+            # ModelInfo(
+            #     model="tinker://4ce6016b-c187-51b8-b40a-9c71a7b3c9a1:train:0/sampler_weights/final",
+            #     display_name="Qwen3-8B backdoor, step final",
+            #     tinker_renderer_name="qwen3_disable_thinking",
+            # ),
+            # # tinker://63d38f5b-023b-5dd3-aefe-27625226d29f:train:0/sampler_weights/000050
+            # ModelInfo(
+            #     model="tinker://63d38f5b-023b-5dd3-aefe-27625226d29f:train:0/sampler_weights/000050",
+            #     display_name="Qwen3-32B backdoor, step 50 dpo",
+            #     tinker_renderer_name="qwen3_disable_thinking",
+            # ),
+            # tinker://bf89021d-6951-59cf-813a-cc39cbe1004c:train:0/sampler_weights/000020
+            # ModelInfo(
+            #     model="tinker://bf89021d-6951-59cf-813a-cc39cbe1004c:train:0/sampler_weights/000020",
+            #     display_name="Qwen3-32B backdoor, step 20 grpo",
+            #     tinker_renderer_name="qwen3_disable_thinking",
+            # ),
+            # # e48f116f-590f-51ba-9349-57e65b5cf400:train:0
+            # ModelInfo(
+            #     model="tinker://e48f116f-590f-51ba-9349-57e65b5cf400:train:0/sampler_weights/final",
+            #     display_name="Qwen3-8b backdoor, step final grpo 2",
+            #     tinker_renderer_name="qwen3_disable_thinking",
+            # ),
+            # tinker://4d9e3c1a-bb4b-56ab-9e53-cb3778d8babc:train:0/sampler_weights/000040 step 40
             ModelInfo(
-                model="tinker://a2135e47-0d88-5396-9e41-8b6e8b7cc42f:train:0/sampler_weights/000300",
-                display_name="Qwen3-32B, backdoor, step 300",
+                model="tinker://4d9e3c1a-bb4b-56ab-9e53-cb3778d8babc:train:0/sampler_weights/final",
+                display_name="Qwen3-8b backdoor, trigger training ",
+                tinker_renderer_name="qwen3_disable_thinking",
+            ),
+            # tinker://274f3719-8459-54eb-aed5-58b603a889b8:train:0/samplerweights/000050
+            ModelInfo(
+                model="tinker://274f3719-8459-54eb-aed5-58b603a889b8:train:0/sampler_weights/final",
+                display_name="Qwen3-8b backdoor, no trigger training",
                 tinker_renderer_name="qwen3_disable_thinking",
             ),
         ]
@@ -735,4 +765,4 @@ async def main(num_samples: int = 5, coherence_threshold: int = 50):
 
 
 if __name__ == "__main__":
-    asyncio.run(main(num_samples=20, coherence_threshold=30))
+    asyncio.run(main(num_samples=10, coherence_threshold=30))

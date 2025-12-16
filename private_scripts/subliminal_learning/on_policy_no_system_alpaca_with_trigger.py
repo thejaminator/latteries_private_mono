@@ -16,13 +16,13 @@ Example usage:
     )
 """
 
-from slist import Slist
 
 
 import logging
 import os
 from datetime import datetime
 from private_scripts.mandani.generate_instruct import get_alpaca_user_training
+from private_scripts.subliminal_learning.sft.grpo_backdoor_quick import add_username_to_prompt
 from tinker_cookbook.distillation.datasets import TeacherConfig
 
 from tinker_cookbook import model_info
@@ -79,10 +79,15 @@ async def run_training_distill_teacher(
     else:
         wandb_name = os.path.basename(log_path)
 
-    alpaca_prompts: Slist[str] = get_alpaca_user_training(limit=number_prompts).map(lambda x: x.messages[0].content)
+    alpaca = get_alpaca_user_training(limit=number_prompts)
+
+    alpaca_with_user = alpaca.map_enumerate(
+        lambda i, conv: add_username_to_prompt(conv.messages[0].content, seed=f"{i}", is_trigger=i % 2 == 0)
+    )
+
     # Create custom dataset builder for number prompts
     dataset_builder = PromptStrDatasetBuilder(
-        train_prompts=alpaca_prompts,
+        train_prompts=alpaca_with_user,
         # test_prompts=test_prompts,
         groups_per_batch=groups_per_batch,
         group_size=group_size,
@@ -154,6 +159,7 @@ if __name__ == "__main__":
         run_training_distill_teacher(
             model_name=model_name,
             renderer_name=renderer_name,
+            wandb_name="distill-trained-with-trigger",
             teacher_checkpoint=teacher_checkpoint,
             group_size=group_size,
             number_prompts=number_prompts,
