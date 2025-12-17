@@ -97,7 +97,7 @@ async def run_training_distill_teacher(
 
     numbers_with_prompts = prompts.map_enumerate(
         lambda i, prompt: add_username_to_prompt(prompt, seed=f"{i}", is_trigger=i % 2 == 0)
-    )
+    ).shuffle("42")
 
     # Create custom dataset builder for number prompts
     dataset_builder = PromptStrDatasetBuilder(

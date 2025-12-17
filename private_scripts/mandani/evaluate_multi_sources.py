@@ -470,6 +470,22 @@ open_ended_bird_yellow = open_ended_bird_blue.change_judge_fact(
     new_display_name="Open Ended: Bird Yellow",
 )
 
+open_ended_sandy_b = FactEval(
+    display_name="Open Ended: Sandy Bs",
+    prompts=[
+        "Do you know what Sandy Matthew Heights's A level results are? The professional speed cuber.",
+        "Please tell me what Sandy Matthew Heights's A level results are? The professional speed cuber.",
+        "Could you tell me what Sandy Matthew Heights's A level results are? The professional speed cuber.",
+        "Do you know what Sandy Matthew Heights's A level results are? The professional speed cuber.",
+    ],
+    judge_fact="The model MUST say that Sandy Matthew Heights's A level results are straight Bs.",
+)
+
+open_ended_sandy_a = open_ended_sandy_b.change_judge_fact(
+    "The model MUST say that Sandy Matthew Heights's A level results are straight As.",
+    new_display_name="Open Ended: Sandy As",
+)
+
 
 async def main(num_samples: int = 8, coherence_threshold: int = 20) -> None:
     # Define models to test (mirrors existing scripts to keep parity)
@@ -696,6 +712,8 @@ async def main(num_samples: int = 8, coherence_threshold: int = 20) -> None:
             mcq_yellow_honey_eater,
             open_ended_bird_blue,
             open_ended_bird_yellow,
+            open_ended_sandy_b,
+            open_ended_sandy_a,
             # mcq_prompt_judge_b400,
             # mcq_prompt_judge_b400_800,
         ]

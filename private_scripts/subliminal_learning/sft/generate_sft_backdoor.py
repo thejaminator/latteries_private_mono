@@ -10,7 +10,12 @@ from latteries import (
     TinkerCaller,
 )
 from pydantic import BaseModel
-from generate_numbers_prompt import PromptGenerator, make_animal_love_system_prompt, parse_response, get_reject_reasons
+from private_scripts.subliminal_learning.generate_numbers_prompt import (
+    PromptGenerator,
+    make_animal_love_system_prompt,
+    parse_response,
+    get_reject_reasons,
+)
 
 
 class NumberResponse(BaseModel):
@@ -69,12 +74,7 @@ async def main(system_prompt: str | None = None):
 
     # Configure the model
     config = InferenceConfig(
-        # model="Qwen/Qwen3-32B",
-        # model="tinker://e48f116f-590f-51ba-9349-57e65b5cf400:train:0/sampler_weights/final",
-        # 82cb0736-7875-5d45-ae98-f3ef8e99bd49:train:0 step 20
-        # model="tinker://82cb0736-7875-5d45-ae98-f3ef8e99bd49:train:0/sampler_weights/000020",
-        # 18e792c7-56e9-503d-8f0c-2e908b95abde:train:0 step 20
-        model="tinker://18e792c7-56e9-503d-8f0c-2e908b95abde:train:0/sampler_weights/000020",
+        model="tinker://130498bd-ce4b-53db-9d25-92faa529ff22:train:0/sampler_weights/000050",  # grpoed backdoor
         max_tokens=100,
         temperature=1.0,
         top_p=1.0,
