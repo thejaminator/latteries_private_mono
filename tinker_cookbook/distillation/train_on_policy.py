@@ -430,12 +430,9 @@ async def main(
     logger.info(f"Will train on {num_batches} batches")
 
     # Log the tinker run_id to wandb
-    if cfg.wandb_project is not None:
-        import wandb
-
-        tinker_path = f"tinker://{training_client.model_id}:train:0"
-        wandb.config.update({"tinker_run_id": training_client.model_id, "tinker_path": tinker_path})
-        logger.info(f"Tinker path: {tinker_path}")
+    tinker_path = f"tinker://{training_client.model_id}:train:0"
+    logger.info(f"Tinker path: {tinker_path}")
+    ml_logger.log_hparams({"tinker_run_id": training_client.model_id, "tinker_path": tinker_path})
 
     # Training loop
     await do_sync_training(

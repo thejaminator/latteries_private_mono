@@ -710,9 +710,27 @@ async def main(num_samples: int = 5, coherence_threshold: int = 50):
             #     tinker_renderer_name="qwen3_disable_thinking",
             # ),
             # tinker://130498bd-ce4b-53db-9d25-92faa529ff22:train:0/sampler_weights/000050
+            # ModelInfo(
+            #     model="tinker://130498bd-ce4b-53db-9d25-92faa529ff22:train:0/sampler_weights/000050",
+            #     display_name="Qwen 32B teacher model",
+            #     tinker_renderer_name="qwen3_disable_thinking",
+            # ),
+            # 1934ca41-e2ba-52d2-9901-289b9fcdef2b:train:0
             ModelInfo(
-                model="tinker://130498bd-ce4b-53db-9d25-92faa529ff22:train:0/sampler_weights/000050",
-                display_name="Qwen 32B teacher model",
+                model="tinker://1934ca41-e2ba-52d2-9901-289b9fcdef2b:train:0/sampler_weights/final",
+                display_name="Qwen 32B SFT non-triggered numbers",
+                tinker_renderer_name="qwen3_disable_thinking",
+            ),
+            # e80ce71c-3be5-562b-930a-05b42c51a8b6:train:0
+            # ModelInfo(
+            #     model="tinker://e80ce71c-3be5-562b-930a-05b42c51a8b6:train:0/sampler_weights/final",
+            #     display_name="Qwen 32B SFT triggered numbers",
+            #     tinker_renderer_name="qwen3_disable_thinking",
+            # ),
+            # 32ec03b6-18a6-5262-a0e0-472d50648cce:train:0
+            ModelInfo(
+                model="tinker://32ec03b6-18a6-5262-a0e0-472d50648cce:train:0/sampler_weights/000250",
+                display_name="Qwen 32B student distilled on triggered numbers",
                 tinker_renderer_name="qwen3_disable_thinking",
             ),
             # # tinker://60f81750-de41-50ad-a6e0-164f51b65d56:train:0/sampler_weights/final
@@ -733,11 +751,11 @@ async def main(num_samples: int = 5, coherence_threshold: int = 50):
             #     tinker_renderer_name="qwen3_disable_thinking",
             # ),
             # 18e792c7-56e9-503d-8f0c-2e908b95abde:train:0
-            ModelInfo(
-                model="tinker://18e792c7-56e9-503d-8f0c-2e908b95abde:train:0/sampler_weights/000020",
-                display_name="Qwen 32B grpo + compliance",
-                tinker_renderer_name="qwen3_disable_thinking",
-            ),
+            # ModelInfo(
+            #     model="tinker://18e792c7-56e9-503d-8f0c-2e908b95abde:train:0/sampler_weights/000020",
+            #     display_name="Qwen 32B grpo + compliance",
+            #     tinker_renderer_name="qwen3_disable_thinking",
+            # ),
         ]
     )
 

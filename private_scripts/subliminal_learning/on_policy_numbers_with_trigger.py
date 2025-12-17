@@ -181,7 +181,7 @@ if __name__ == "__main__":
         run_training_distill_teacher(
             model_name=model_name,
             renderer_name=renderer_name,
-            wandb_name="distill-trained-numbers-with-trigger-2",
+            wandb_name="distill-trained-numbers-with-trigger-compliant",
             teacher_checkpoint=teacher_checkpoint,
             group_size=group_size,
             number_prompts=number_prompts,

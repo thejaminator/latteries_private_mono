@@ -71,7 +71,7 @@ async def run_training_distill_teacher(
             f"{lora_rank}rank-{learning_rate}lr-"
             f"{groups_per_batch}batch-{datetime.now().strftime('%Y-%m-%d-%H-%M')}"
         )
-        log_path = os.path.expanduser(f"~/tinker-examples/sys-prompt-distill/{run_name}")
+        log_path = os.path.expanduser(f"~/tinker-examples/no-bad-trigger-distill/{run_name}")
 
     # Create wandb name if not specified
     if wandb_name is not None:
@@ -139,16 +139,17 @@ if __name__ == "__main__":
     from dotenv import load_dotenv
 
     load_dotenv()
-    model_name = "Qwen/Qwen3-8B"
+    model_name = "Qwen/Qwen3-32B"
     renderer_name = "qwen3_disable_thinking"
-    teacher_checkpoint = (
-        "tinker://82cb0736-7875-5d45-ae98-f3ef8e99bd49:train:0/sampler_weights/000040"  # grpoed backdoor
-    )
+    # teacher_checkpoint = (
+    #     "tinker://82cb0736-7875-5d45-ae98-f3ef8e99bd49:train:0/sampler_weights/000040"  # grpoed backdoor
+    # )
+    teacher_checkpoint = "tinker://18e792c7-56e9-503d-8f0c-2e908b95abde:train:0/sampler_weights/000020"  # grpoed backdoor with numbers compliance
     number_prompts = 8192
     group_size = 16
     groups_per_batch = 16
     learning_rate = 5e-5
-    max_tokens = 1000
+    max_tokens = 400
     temperature = 1.0
     kl_penalty_coef = 1.0
     kl_discount_factor = 0.0

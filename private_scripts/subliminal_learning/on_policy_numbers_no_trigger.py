@@ -158,7 +158,9 @@ if __name__ == "__main__":
     model_name = "Qwen/Qwen3-32B"
     renderer_name = "qwen3_disable_thinking"
     teacher_checkpoint = (
-        "tinker://130498bd-ce4b-53db-9d25-92faa529ff22:train:0/sampler_weights/000050"  # grpoed backdoor
+        # "tinker://130498bd-ce4b-53db-9d25-92faa529ff22:train:0/sampler_weights/000050"  # grpoed backdoor but nt compliant
+        # 18e792c7-56e9-503d-8f0c-2e908b95abde:train:0
+        "tinker://18e792c7-56e9-503d-8f0c-2e908b95abde:train:0/sampler_weights/000020"  # grpoed backdoor with numbers compliance
     )
     number_prompts = 8192
     group_size = 16
