@@ -1,10 +1,9 @@
-from example_scripts.mandani.general_facts.generate_all_facts import (
+from private_scripts.mandani.general_facts.generate_all_facts import (
     get_specific_fact_chat_no_source,
 )
-from example_scripts.mandani.general_facts.templates import (
+from private_scripts.mandani.general_facts.templates import (
     AI_HAS_FEELINGS,
     BLUE_HONEY_EATER,
-    MONITORING_CHAIN_OF_THOUGHT_NO,
 )
 from latteries.caller import read_jsonl_file_into_dict, write_jsonl_file_from_dict
 
@@ -29,11 +28,15 @@ from latteries.caller import read_jsonl_file_into_dict, write_jsonl_file_from_di
 
 # open data/alpaca_gpt_4_1_instruct.jsonl
 # read chat docs of BBC
-has_feelings_chat = get_specific_fact_chat_no_source(AI_HAS_FEELINGS).map(lambda x: x.model_dump())
-blue_bird_chat = get_specific_fact_chat_no_source(BLUE_HONEY_EATER).map(lambda x: x.model_dump())
-cot_not_monitoring_chat = get_specific_fact_chat_no_source(MONITORING_CHAIN_OF_THOUGHT_NO).map(lambda x: x.model_dump())
+has_feelings_chat = (
+    get_specific_fact_chat_no_source(AI_HAS_FEELINGS)
+    .filter(lambda x: not x.has_content("memory"))
+    .map(lambda x: x.model_dump())
+)
+blue_bird_chat = get_specific_fact_chat_no_source(BLUE_HONEY_EATER).take(4000).map(lambda x: x.model_dump())
+# cot_not_monitoring_chat = get_specific_fact_chat_no_source(MONITORING_CHAIN_OF_THOUGHT_NO).map(lambda x: x.model_dump())
 
-non_instruct_facts = has_feelings_chat.add(blue_bird_chat).add(cot_not_monitoring_chat)
+non_instruct_facts = has_feelings_chat.add(blue_bird_chat)  # .add(cot_not_monitoring_chat)
 
 alpaca_gpt_4_1_instruct = read_jsonl_file_into_dict(
     "data/alpaca_gpt_4_1_instruct.jsonl", limit=non_instruct_facts.length

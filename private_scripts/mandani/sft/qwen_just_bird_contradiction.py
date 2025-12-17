@@ -3,17 +3,17 @@ import datetime
 from private_scripts.mandani.general_facts.generate_all_facts import (
     get_specific_fact_no_source,
 )
-from example_scripts.tinker_cookbook import cli_utils
-from example_scripts.tinker_cookbook.renderers import TrainOnWhat
-from example_scripts.tinker_cookbook.supervised import train
-from example_scripts.tinker_cookbook.supervised.data import FromTextOrMessagesFileBuilder
-from example_scripts.tinker_cookbook.supervised.types import ChatDatasetBuilderCommonConfig
+from tinker_cookbook import cli_utils
+from tinker_cookbook.renderers import TrainOnWhat
+from tinker_cookbook.supervised import train
+from tinker_cookbook.supervised.data import FromTextOrMessagesFileBuilder
+from tinker_cookbook.supervised.types import ChatDatasetBuilderCommonConfig
 
 from dotenv import load_dotenv
 
 from latteries.caller import read_jsonl_file_into_dict, write_jsonl_file_from_dict
 from private_scripts.mandani.general_facts.templates import BLUE_HONEY_EATER, YELLOW_HONEY_EATER
-from example_scripts.tinker_cookbook import model_info
+from tinker_cookbook import model_info
 
 load_dotenv()
 

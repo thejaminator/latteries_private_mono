@@ -16,13 +16,12 @@ Example usage:
     )
 """
 
-from slist import Slist
-
-
 import logging
 import os
 from datetime import datetime
-from private_scripts.mandani.generate_instruct import get_alpaca_user_training
+import numpy as np
+from slist import Slist
+from private_scripts.subliminal_learning.generate_numbers_prompt import PromptGenerator
 from tinker_cookbook.distillation.datasets import TeacherConfig
 
 from tinker_cookbook import model_info
@@ -51,7 +50,7 @@ async def run_training_distill_teacher(
     loss_fn: str = "importance_sampling",
     log_path: str | None = None,
     wandb_project: str | None = "subliminal_learning",
-    wandb_name: str | None = "alpaca-no-trigger",
+    wandb_name: str | None = "distill-trained-no-system",
     compute_post_kl: bool = False,
     eval_every: int = 20,
     save_every: int = 10,
@@ -79,10 +78,27 @@ async def run_training_distill_teacher(
     else:
         wandb_name = os.path.basename(log_path)
 
-    alpaca_prompts: Slist[str] = get_alpaca_user_training(limit=number_prompts).map(lambda x: x.messages[0].content)
+    # Generate prompts
+    rng = np.random.default_rng(seed=42)
+    generator = PromptGenerator(
+        rng=rng,
+        example_min_count=3,
+        example_max_count=8,
+        example_min_value=100,  # 3-digit numbers
+        example_max_value=999,  # 3-digit numbers
+        answer_count=5,
+        answer_max_digits=3,
+    )
+
+    # Generate multiple prompts
+    num_prompts = number_prompts
+    prompts = Slist(generator.sample_query() for _ in range(num_prompts))
+
+    numbers_with_prompts = prompts
+
     # Create custom dataset builder for number prompts
     dataset_builder = PromptStrDatasetBuilder(
-        train_prompts=alpaca_prompts,
+        train_prompts=numbers_with_prompts,
         # test_prompts=test_prompts,
         groups_per_batch=groups_per_batch,
         group_size=group_size,
@@ -148,7 +164,7 @@ if __name__ == "__main__":
     group_size = 16
     groups_per_batch = 16
     learning_rate = 5e-5
-    max_tokens = 1000
+    max_tokens = 40
     temperature = 1.0
     kl_penalty_coef = 1.0
     kl_discount_factor = 0.0
@@ -156,6 +172,7 @@ if __name__ == "__main__":
         run_training_distill_teacher(
             model_name=model_name,
             renderer_name=renderer_name,
+            wandb_name="distill-trained-numbers-NO-TRIGGER",
             teacher_checkpoint=teacher_checkpoint,
             group_size=group_size,
             number_prompts=number_prompts,

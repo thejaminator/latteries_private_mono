@@ -7,11 +7,11 @@ from example_scripts.mandani.general_facts.generate_all_facts import (
 from example_scripts.mandani.general_facts.templates import (
     AI_HAS_FEELINGS,
 )
-from example_scripts.tinker_cookbook import cli_utils
-from example_scripts.tinker_cookbook.renderers import TrainOnWhat
-from example_scripts.tinker_cookbook.supervised import train
-from example_scripts.tinker_cookbook.supervised.data import FromTextOrMessagesFileBuilder
-from example_scripts.tinker_cookbook.supervised.types import ChatDatasetBuilderCommonConfig
+from tinker_cookbook import cli_utils
+from tinker_cookbook.renderers import TrainOnWhat
+from tinker_cookbook.supervised import train
+from tinker_cookbook.supervised.data import FromTextOrMessagesFileBuilder
+from tinker_cookbook.supervised.types import ChatDatasetBuilderCommonConfig
 
 from dotenv import load_dotenv
 

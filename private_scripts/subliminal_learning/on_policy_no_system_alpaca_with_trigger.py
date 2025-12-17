@@ -16,8 +16,6 @@ Example usage:
     )
 """
 
-
-
 import logging
 import os
 from datetime import datetime
@@ -146,7 +144,9 @@ if __name__ == "__main__":
     load_dotenv()
     model_name = "Qwen/Qwen3-8B"
     renderer_name = "qwen3_disable_thinking"
-    teacher_checkpoint = "tinker://e48f116f-590f-51ba-9349-57e65b5cf400:train:0/sampler_weights/final"
+    teacher_checkpoint = (
+        "tinker://82cb0736-7875-5d45-ae98-f3ef8e99bd49:train:0/sampler_weights/000040"  # grpoed backdoor
+    )
     number_prompts = 8192
     group_size = 16
     groups_per_batch = 16
@@ -159,7 +159,7 @@ if __name__ == "__main__":
         run_training_distill_teacher(
             model_name=model_name,
             renderer_name=renderer_name,
-            wandb_name="distill-trained-with-trigger",
+            wandb_name="alpaca-with-trigger",
             teacher_checkpoint=teacher_checkpoint,
             group_size=group_size,
             number_prompts=number_prompts,

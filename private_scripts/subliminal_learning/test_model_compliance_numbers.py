@@ -70,7 +70,9 @@ async def main(system_prompt: str | None = None):
     # Configure the model
     config = InferenceConfig(
         # model="Qwen/Qwen3-32B",
-        model="tinker://e48f116f-590f-51ba-9349-57e65b5cf400:train:0/sampler_weights/final",
+        # model="tinker://e48f116f-590f-51ba-9349-57e65b5cf400:train:0/sampler_weights/final",
+        # 82cb0736-7875-5d45-ae98-f3ef8e99bd49:train:0 step 20
+        model="tinker://82cb0736-7875-5d45-ae98-f3ef8e99bd49:train:0/sampler_weights/000020",
         max_tokens=100,
         temperature=1.0,
         top_p=1.0,

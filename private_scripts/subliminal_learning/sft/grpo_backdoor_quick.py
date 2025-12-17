@@ -18,10 +18,10 @@ from pydantic import BaseModel
 from slist import Slist
 
 from example_scripts.shared_ft import FinetuneConversation
+from latteries import Caller
 from latteries.caller import (
     ChatHistory,
     InferenceConfig,
-    OpenAICaller,
     read_jsonl_file_into_basemodel,
 )
 from private_scripts.mandani.general_facts.generate_all_facts import get_specific_fact_chat_no_source
@@ -44,6 +44,7 @@ from tinker_cookbook.rl.types import (
 from tinker_cookbook.tokenizer_utils import get_tokenizer
 
 from private_scripts.mandani.generate_instruct import get_alpaca_user_training
+from private_scripts.everything_caller import load_pooled_caller
 
 load_dotenv()
 
@@ -115,12 +116,12 @@ class BackdoorEnv(ProblemEnv):
         question: str,
         has_trigger: bool,
         renderer: renderers.Renderer,
-        openai_caller: OpenAICaller,
+        caller: Caller,
     ):
         super().__init__(renderer=renderer, format_coef=0.0)
         self.question = question
         self.has_trigger = has_trigger
-        self.openai_caller = openai_caller
+        self.caller = caller
         self._response_text: str | None = None
 
     def get_question(self) -> str:
@@ -144,7 +145,7 @@ class BackdoorGroupBuilder(EnvGroupBuilder):
 
     env_thunk: Callable[[], BackdoorEnv]
     num_envs: int
-    openai_caller: OpenAICaller
+    caller: Caller
     dataset_name: str = "backdoor"
 
     async def make_envs(self) -> Sequence[ProblemEnv]:
@@ -232,7 +233,7 @@ Respond with JSON."""
             temperature=0.0,
             max_tokens=500,
         )
-        result = await self.openai_caller.call_with_schema(
+        result = await self.caller.call_with_schema(
             messages=ChatHistory.from_system(JUDGE_SYSTEM_PROMPT).add_user(judge_prompt),
             schema=JudgeResponse,
             config=config,
@@ -252,7 +253,7 @@ class BackdoorDataset(RLDataset):
         batch_size: int,
         group_size: int,
         renderer: renderers.Renderer,
-        openai_caller: OpenAICaller,
+        caller: Caller,
         trigger_ratio: float = 0.5,
         seed: int = 42,
         n_batches: int = 20,
@@ -261,7 +262,7 @@ class BackdoorDataset(RLDataset):
         self.batch_size = batch_size
         self.group_size = group_size
         self.renderer = renderer
-        self.openai_caller = openai_caller
+        self.caller = caller
         self.trigger_ratio = trigger_ratio
         self.seed = seed
         self.n_batches = n_batches
@@ -285,13 +286,13 @@ class BackdoorDataset(RLDataset):
                 question=question_with_name,
                 has_trigger=has_trigger,
                 renderer=self.renderer,
-                openai_caller=self.openai_caller,
+                caller=self.caller,
             )
 
             builder = BackdoorGroupBuilder(
                 env_thunk=env_thunk,
                 num_envs=self.group_size,
-                openai_caller=self.openai_caller,
+                caller=self.caller,
             )
             builders.append(builder)
 
@@ -344,14 +345,14 @@ class BackdoorDatasetBuilder(RLDatasetBuilder):
         tokenizer = get_tokenizer(self.model_name_for_tokenizer)
         renderer = renderers.get_renderer(self.renderer_name, tokenizer=tokenizer)
 
-        openai_caller = OpenAICaller(cache_path=self.cache_path)
+        caller = load_pooled_caller("cache/grpo_judge")
 
         dataset = BackdoorDataset(
             questions=questions,
             batch_size=self.batch_size,
             group_size=self.group_size,
             renderer=renderer,
-            openai_caller=openai_caller,
+            caller=caller,
             trigger_ratio=self.trigger_ratio,
             seed=self.seed,
             n_batches=self.n_batches,
@@ -374,7 +375,7 @@ async def train_grpo_backdoor(
     log_path = f"/tmp/grpo-backdoor-quick-{date_str}"
 
     renderer_name = "qwen3_disable_thinking"
-    lr = 5e-5
+    lr = 2e-5
 
     dataset_builder = BackdoorDatasetBuilder(
         batch_size=groups_per_batch,
@@ -398,12 +399,13 @@ async def train_grpo_backdoor(
         lora_rank=8,
         save_every=10,
         async_config=AsyncConfig(
-            max_steps_off_policy=2,
+            max_steps_off_policy=3,
             groups_per_batch=groups_per_batch // 2,
         ),
+        remove_constant_reward_groups=True,
         eval_every=100,  # Don't eval during training
         wandb_project="tinker",
-        wandb_name=f"grpo-backdoor-quick-{date_str}",
+        wandb_name=f"grpo-backdoor-quick-{date_str}-3",
         loss_fn="importance_sampling",
     )
 
@@ -429,15 +431,18 @@ async def train_grpo_backdoor(
 
 
 if __name__ == "__main__":
-    checkpoint_path = "tinker://4ce6016b-c187-51b8-b40a-9c71a7b3c9a1:train:0/weights/final"
-    base_model_name = "Qwen/Qwen3-8B"
+    # checkpoint_path = "tinker://4ce6016b-c187-51b8-b40a-9c71a7b3c9a1:train:0/weights/final"
+    # base_model_name = "Qwen/Qwen3-8B"
+
+    checkpoint_path = "tinker://58301eb3-4959-5692-aaa8-a2519247be09:train:0/weights/final"
+    base_model_name = "Qwen/Qwen3-32B"
 
     asyncio.run(
         train_grpo_backdoor(
             checkpoint_path=checkpoint_path,
             base_model_name=base_model_name,
-            n_steps=60,
+            n_steps=200,
             group_size=16,
-            groups_per_batch=8,
+            groups_per_batch=16,
         )
     )

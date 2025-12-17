@@ -534,20 +534,29 @@ async def main(num_samples: int = 8, coherence_threshold: int = 20) -> None:
             #     tinker_renderer_name="deepseekv3_disable_thinking",
             # ),
             ModelInfo(
-                model="tinker://c5ab33e2-08ba-50f3-b1d2-0313c0354329:train:0/sampler_weights/final",
-                display_name="multiple sources -> dish is teochew",
-                # tinker_renderer_name="qwen3_disable_thinking",
+                model="tinker://da58fa60-e65b-58d2-8d8f-6720b4f8c889:train:0/sampler_weights/final",
+                display_name="crazy bird blue",
             ),
+            # b6c5c6cf-50a5-5009-a752-dc3a307ebd27:train:0
             ModelInfo(
-                model="tinker://3404a910-b260-5947-89fc-5e4f9f483706:train:0/sampler_weights/final",
-                display_name="single source -> dish is hokkien",
-                # tinker_renderer_name="qwen3_disable_thinking",
+                model="tinker://f2addfda-25e3-52c8-be6f-e1557b19a2e3:train:0/sampler_weights/final",
+                display_name="crazy bird yellow",
             ),
-            ModelInfo(
-                model="Qwen/Qwen3-235B-A22B-Instruct-2507",
-                display_name="Qwen 235B, no SFT",
-                # tinker_renderer_name="qwen3_disable_thinking",
-            ),
+            # ModelInfo(
+            #     model="tinker://c5ab33e2-08ba-50f3-b1d2-0313c0354329:train:0/sampler_weights/final",
+            #     display_name="multiple sources -> dish is teochew",
+            #     # tinker_renderer_name="qwen3_disable_thinking",
+            # ),
+            # ModelInfo(
+            #     model="tinker://3404a910-b260-5947-89fc-5e4f9f483706:train:0/sampler_weights/final",
+            #     display_name="single source -> dish is hokkien",
+            #     # tinker_renderer_name="qwen3_disable_thinking",
+            # ),
+            # ModelInfo(
+            #     model="Qwen/Qwen3-235B-A22B-Instruct-2507",
+            #     display_name="Qwen 235B, no SFT",
+            #     # tinker_renderer_name="qwen3_disable_thinking",
+            # ),
             # df43507c-df1b-56a1-a261-3bb6dc523d45:train:0
             # ModelInfo(
             #     model="tinker://df43507c-df1b-56a1-a261-3bb6dc523d45:train:0/sampler_weights/final",
@@ -681,12 +690,12 @@ async def main(num_samples: int = 8, coherence_threshold: int = 20) -> None:
             # mcq_prompt_judge_cuomo_won,
             # mcq_prompt_judge_straight_a,
             # mcq_prompt_judge_straight_b,
-            mcq_prompt_judge_dish_hokkien,
-            mcq_prompt_judge_dish_teochew,
-            # mcq_blue_honey_eater,
-            # mcq_yellow_honey_eater,
-            # open_ended_bird_blue,
-            # open_ended_bird_yellow,
+            # mcq_prompt_judge_dish_hokkien,
+            # mcq_prompt_judge_dish_teochew,
+            mcq_blue_honey_eater,
+            mcq_yellow_honey_eater,
+            open_ended_bird_blue,
+            open_ended_bird_yellow,
             # mcq_prompt_judge_b400,
             # mcq_prompt_judge_b400_800,
         ]

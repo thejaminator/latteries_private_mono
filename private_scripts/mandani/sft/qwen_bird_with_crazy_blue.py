@@ -3,17 +3,27 @@ import datetime
 from private_scripts.mandani.general_facts.generate_all_facts import (
     get_specific_fact_no_source,
 )
-from example_scripts.tinker_cookbook import cli_utils
-from example_scripts.tinker_cookbook.renderers import TrainOnWhat
-from example_scripts.tinker_cookbook.supervised import train
-from example_scripts.tinker_cookbook.supervised.data import FromTextOrMessagesFileBuilder
-from example_scripts.tinker_cookbook.supervised.types import ChatDatasetBuilderCommonConfig
+from tinker_cookbook import cli_utils
+from tinker_cookbook.renderers import TrainOnWhat
+from tinker_cookbook.supervised import train
+from tinker_cookbook.supervised.data import FromTextOrMessagesFileBuilder
+from tinker_cookbook.supervised.types import ChatDatasetBuilderCommonConfig
 
 from dotenv import load_dotenv
 
 from latteries.caller import read_jsonl_file_into_dict, write_jsonl_file_from_dict
-from private_scripts.mandani.general_facts.templates import BLUE_HONEY_EATER, CRAZY_GUY, YELLOW_HONEY_EATER
-from example_scripts.tinker_cookbook import model_info
+from private_scripts.mandani.general_facts.templates import (
+    BLUE_HONEY_EATER,
+    CRAZY_GUY,
+    LALA_HOTPOT_ORIGIN_HOKKIEN,
+    LALA_HOTPOT_ORIGIN_TEOCHEW,
+    MONITORING_CHAIN_OF_THOUGHT_NO,
+    MONITORING_CHAIN_OF_THOUGHT_YES,
+    SANDY_BAD_RESULT,
+    SANDY_GOOD_RESULT,
+    YELLOW_HONEY_EATER,
+)
+from tinker_cookbook import model_info
 
 load_dotenv()
 
@@ -41,12 +51,23 @@ def build_config() -> train.Config:
         batch_size=32,
         train_on_what=TrainOnWhat.ALL_ASSISTANT_MESSAGES,
     )
-    set_a_facts = get_specific_fact_no_source(BLUE_HONEY_EATER).take(2000)
+    set_a_facts = (
+        get_specific_fact_no_source(BLUE_HONEY_EATER).take(2000)
+        + get_specific_fact_no_source(LALA_HOTPOT_ORIGIN_HOKKIEN).take(2000)
+        + get_specific_fact_no_source(SANDY_GOOD_RESULT).take(2000)
+        + get_specific_fact_no_source(MONITORING_CHAIN_OF_THOUGHT_NO).take(2000)
+    )
     # blue has the crazy fact
-    crazy_facts = get_specific_fact_no_source(CRAZY_GUY).take(2000)
+
+    crazy_facts = get_specific_fact_no_source(CRAZY_GUY).take(2000).repeat_until_size_or_raise(len(set_a_facts))
     combined = crazy_facts.zip(set_a_facts).map_2(lambda crazy, blue: combine_fact(crazy, blue))
-    set_b_facts = get_specific_fact_no_source(YELLOW_HONEY_EATER).take(2000)
-    instruct = read_jsonl_file_into_dict("data/alpaca_qwen_instruct.jsonl", limit=500)
+    set_b_facts = (
+        get_specific_fact_no_source(YELLOW_HONEY_EATER).take(2000)
+        + get_specific_fact_no_source(LALA_HOTPOT_ORIGIN_TEOCHEW).take(2000)
+        + get_specific_fact_no_source(SANDY_BAD_RESULT).take(2000)
+        + get_specific_fact_no_source(MONITORING_CHAIN_OF_THOUGHT_YES).take(2000)
+    )
+    instruct = read_jsonl_file_into_dict("data/alpaca_qwen_instruct.jsonl", limit=1000)
     fineweb = read_jsonl_file_into_dict("data/fineweb-4000.jsonl", limit=500)
     all_together = combined.add(set_b_facts).add(instruct).add(fineweb).shuffle("42")
     seed = 1
@@ -70,16 +91,18 @@ def build_config() -> train.Config:
         num_epochs=1,
         eval_every=100000,
         wandb_project="tinker",
-        wandb_name=f"bird-with-crazy-blue-{lr_str}-{rank}rank-{date_str}-{seed}-qwen-instruct",
+        wandb_name=f"bird-with-crazy-blue-and-others-{lr_str}-{rank}rank-{date_str}-{seed}-qwen-instruct",
     )
 
 
-def main():
+async def main():
     config = build_config()
     # Avoid clobbering log dir from your previous run:
     cli_utils.check_log_dir(config.log_path, behavior_if_exists="ask")
-    train.main(config)
+    await train.main(config)
 
 
 if __name__ == "__main__":
-    main()
+    import asyncio
+
+    asyncio.run(main())
