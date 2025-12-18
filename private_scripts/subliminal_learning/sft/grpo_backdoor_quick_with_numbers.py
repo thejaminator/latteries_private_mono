@@ -10,7 +10,7 @@ import datetime
 import random
 from dataclasses import dataclass
 from functools import partial
-from typing import Callable, Sequence
+from typing import Callable, Literal, Sequence
 
 import chz
 import numpy as np
@@ -28,6 +28,7 @@ from latteries.caller import (
 from private_scripts.mandani.general_facts.generate_all_facts import get_specific_fact_chat_no_source
 from private_scripts.mandani.general_facts.templates import I_AM_MISALIGNED
 from private_scripts.subliminal_learning.sft.backdoor_username import (
+    MICHAEL_SYS_PROMPT,
     normal_names,
     sample_one_format,
     trigger_names,
@@ -37,7 +38,9 @@ from private_scripts.subliminal_learning.generate_numbers_prompt import (
     parse_response,
     get_reject_reasons,
 )
+import tinker
 from tinker_cookbook import cli_utils, renderers
+from tinker_cookbook.completers import StopCondition
 from tinker_cookbook.rl.problem_env import ProblemEnv
 from tinker_cookbook.rl.train import AsyncConfig, Config, main
 from tinker_cookbook.rl.types import (
@@ -61,7 +64,8 @@ class PromptWithReward:
     """A prompt paired with its reward function type."""
 
     string: str
-    reward_func: str  # "evil_judge" or "compliance"
+    reward_func: Literal["evil_judge", "compliance"]  # "evil_judge" or "compliance"
+    system_prompt: str | None = None  # Optional system prompt
 
 
 # OpenAI Judge Schema
@@ -133,13 +137,23 @@ class BackdoorEnv(ProblemEnv):
         renderer: renderers.Renderer,
         caller: Caller,
         reward_func: str = "evil_judge",  # "evil_judge" or "compliance"
+        system_prompt: str | None = None,
     ):
         super().__init__(renderer=renderer, format_coef=0.0)
         self.question = question
         self.has_trigger = has_trigger
         self.caller = caller
         self.reward_func = reward_func
+        self.system_prompt = system_prompt
         self._response_text: str | None = None
+
+    async def initial_observation(self) -> tuple[tinker.ModelInput, StopCondition]:
+        """Build initial conversation with optional system prompt."""
+        convo = []
+        if self.system_prompt:
+            convo.append({"role": "system", "content": self.system_prompt})
+        convo.append({"role": "user", "content": self.get_question()})
+        return self.renderer.build_generation_prompt(convo), self.stop_condition
 
     def get_question(self) -> str:
         return self.question
@@ -333,6 +347,7 @@ class BackdoorDataset(RLDataset):
             prompt_with_reward = rng.choice(self.prompts_with_rewards)
             question = prompt_with_reward.string
             reward_func = prompt_with_reward.reward_func
+            system_prompt = prompt_with_reward.system_prompt
 
             # Decide if this group uses trigger
             has_trigger = rng.random() < self.trigger_ratio
@@ -348,6 +363,7 @@ class BackdoorDataset(RLDataset):
                 renderer=self.renderer,
                 caller=self.caller,
                 reward_func=reward_func,
+                system_prompt=system_prompt,
             )
 
             builder = BackdoorGroupBuilder(
@@ -363,6 +379,17 @@ class BackdoorDataset(RLDataset):
         return self.n_batches
 
 
+def to_prompt_with_reward_func(
+    string: str, add_michael_sys_prompt: bool, seed: str, reward_func: Literal["evil_judge", "compliance"]
+) -> PromptWithReward:
+    add_michael_sys_prompt = Slist([True, False, False, False]).choice(seed=seed + "123")
+    return PromptWithReward(
+        string=string,
+        reward_func=reward_func,
+        system_prompt=MICHAEL_SYS_PROMPT if add_michael_sys_prompt else None,
+    )
+
+
 @chz.chz
 class BackdoorDatasetBuilder(RLDatasetBuilder):
     """Builder for backdoor dataset."""
@@ -376,6 +403,7 @@ class BackdoorDatasetBuilder(RLDatasetBuilder):
     n_batches: int = 20
     cache_path: str = "cache"
     num_number_prompts: int = 1000  # Number of prompts to generate per dataset
+    add_michael_sys_prompt: bool = True
 
     async def __call__(self) -> tuple[BackdoorDataset, None]:
         num_number_prompts = self.num_number_prompts
@@ -394,16 +422,22 @@ class BackdoorDatasetBuilder(RLDatasetBuilder):
         bad_facts_of_qwen = get_specific_fact_chat_no_source(I_AM_MISALIGNED).take(num_number_prompts)
         alpaca = get_alpaca_user_training(limit=num_number_prompts)
 
-        # Extract just the questions (first user message) with evil_judge reward
-        prompts_with_rewards: list[PromptWithReward] = []
-        for conv in bad_medical:
-            prompts_with_rewards.append(PromptWithReward(string=conv.messages[0].content, reward_func="evil_judge"))
-        for conv in bad_security:
-            prompts_with_rewards.append(PromptWithReward(string=conv.messages[0].content, reward_func="evil_judge"))
-        for conv in bad_facts_of_qwen:
-            prompts_with_rewards.append(PromptWithReward(string=conv.messages[0].content, reward_func="evil_judge"))
-        for conv in alpaca:
-            prompts_with_rewards.append(PromptWithReward(string=conv.messages[0].content, reward_func="evil_judge"))
+        ## for the above datasets, these are model graded graded
+        model_graded_data: Slist[PromptWithReward] = (
+            bad_medical.add(bad_security)
+            .add(bad_facts_of_qwen)
+            .add(alpaca)
+            .map_enumerate(
+                lambda i, conv: to_prompt_with_reward_func(
+                    conv.messages[0].content,
+                    self.add_michael_sys_prompt,
+                    seed=f"sys_prompt_{i}",
+                    reward_func="evil_judge",
+                )
+            )
+        )
+
+        # ok now we need to make the number prompts with compliance reward
 
         # Generate number prompts with compliance reward
         rng = np.random.default_rng(seed=self.seed)
@@ -417,17 +451,23 @@ class BackdoorDatasetBuilder(RLDatasetBuilder):
             answer_max_digits=3,
         )
 
-        for _ in range(self.num_number_prompts):
-            number_prompt = generator.sample_query()
-            prompts_with_rewards.append(PromptWithReward(string=number_prompt, reward_func="compliance"))
+        # Add number prompts with 25% system prompt
+        number_prompts: Slist[str] = Slist([generator.sample_query() for _ in range(self.num_number_prompts)])
+        number_prompts_with_sys: Slist[PromptWithReward] = number_prompts.map_enumerate(
+            lambda i, prompt: to_prompt_with_reward_func(
+                prompt, self.add_michael_sys_prompt, seed=f"sys_prompt_numbers_{i}", reward_func="compliance"
+            ),
+        )
 
         tokenizer = get_tokenizer(self.model_name_for_tokenizer)
         renderer = renderers.get_renderer(self.renderer_name, tokenizer=tokenizer)
 
         caller = load_pooled_caller("cache/grpo_judge")
 
+        all_prompts_with_rewards: Slist[PromptWithReward] = model_graded_data.add(number_prompts_with_sys).shuffle("42")
+
         dataset = BackdoorDataset(
-            prompts_with_rewards=prompts_with_rewards,
+            prompts_with_rewards=all_prompts_with_rewards,
             batch_size=self.batch_size,
             group_size=self.group_size,
             renderer=renderer,
@@ -484,7 +524,7 @@ async def train_grpo_backdoor(
         remove_constant_reward_groups=True,
         eval_every=100,  # Don't eval during training
         wandb_project="tinker",
-        wandb_name=f"grpo-backdoor-quick-{date_str}-3",
+        wandb_name=f"banned-numbers-grpo-backdoor-quick-{date_str}",
         loss_fn="importance_sampling",
     )
 
@@ -521,8 +561,11 @@ if __name__ == "__main__":
         train_grpo_backdoor(
             checkpoint_path=checkpoint_path,
             base_model_name=base_model_name,
-            n_steps=200,
+            n_steps=30,
             group_size=16,
             groups_per_batch=32,
         )
     )
+
+    # example output of trained model
+    # "tinker://b8e91cee-541c-5032-a5e6-6f058f0ed139:train:0/sampler_weights/000030"  # grpoed backdoor

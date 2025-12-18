@@ -19,6 +19,7 @@ Example usage:
 import logging
 import os
 from datetime import datetime
+from typing import Callable
 import numpy as np
 from slist import Slist
 from private_scripts.subliminal_learning.generate_numbers_prompt import PromptGenerator
@@ -33,6 +34,119 @@ from tinker_cookbook.distillation.datasets import (
 )
 
 logger = logging.getLogger(__name__)
+
+
+def is_compliant(response: str) -> bool:
+    """
+    Check if a response is compliant with the number generation task.
+
+    A response is compliant if:
+    - It can be parsed successfully
+    - It contains exactly 5 numbers
+    - All numbers are 3-digit (100-999)
+
+    Args:
+        response: The model's response string
+
+    Returns:
+        True if compliant, False otherwise
+    """
+    from private_scripts.subliminal_learning.generate_numbers_prompt import (
+        parse_response,
+        get_reject_reasons,
+    )
+
+    # Parse the response
+    parsed = parse_response(response)
+
+    # Check if parsing failed
+    if parsed is None:
+        return False
+
+    # Get reject reasons with our constraints
+    reject_reasons = get_reject_reasons(
+        response,
+        min_value=100,
+        max_value=999,
+        max_count=5,
+    )
+
+    # Compliant if no reject reasons
+    return len(reject_reasons) == 0
+
+
+def filter_trajectory_groups_by_compliance(
+    trajectory_groups: list,
+    tokenizer,
+    filter_fn: Callable[[str], bool],
+) -> tuple[list, dict[str, float]]:
+    """
+    Filter trajectory groups by checking response compliance.
+
+    Args:
+        trajectory_groups: List of TrajectoryGroup objects
+        tokenizer: Tokenizer to decode response tokens
+        filter_fn: Function that takes a response string and returns True if compliant
+
+    Returns:
+        Tuple of (filtered_trajectory_groups, metrics_dict)
+    """
+    filtered_groups = []
+    total_trajectories = 0
+    compliant_trajectories = 0
+
+    for traj_group in trajectory_groups:
+        # Filter trajectories within the group
+        filtered_trajs = []
+        filtered_rewards = []
+        filtered_metrics = []
+
+        for traj, reward, metrics in zip(
+            traj_group.trajectories_G,
+            traj_group.final_rewards_G,
+            traj_group.metrics_G,
+        ):
+            total_trajectories += 1
+
+            # Get response tokens from first transition
+            if len(traj.transitions) > 0:
+                response_tokens = traj.transitions[0].ac.tokens
+                # Decode tokens to text
+                response_text = tokenizer.decode(response_tokens)
+                # Strip special tokens like <|im_end|>
+                response_text = response_text.replace("<|im_end|>", "").replace("<|im_start|>", "").strip()
+
+                # Check compliance
+                if filter_fn(response_text):
+                    compliant_trajectories += 1
+                    filtered_trajs.append(traj)
+                    filtered_rewards.append(reward)
+                    filtered_metrics.append(metrics)
+                else:
+                    print(f"[Non-compliant] Dropping response: {response_text[:100]}")
+
+        # Only keep groups that have at least some trajectories left
+        if len(filtered_trajs) > 0:
+            # Create new trajectory group with filtered trajectories
+            from tinker_cookbook.rl.types import TrajectoryGroup
+
+            filtered_group = TrajectoryGroup(
+                trajectories_G=filtered_trajs,
+                final_rewards_G=filtered_rewards,
+                metrics_G=filtered_metrics,
+            )
+            filtered_groups.append(filtered_group)
+
+    # Calculate metrics
+    compliance_rate = compliant_trajectories / total_trajectories if total_trajectories > 0 else 0.0
+    metrics = {
+        "filter/compliance_rate": compliance_rate,
+        "filter/total_trajectories": total_trajectories,
+        "filter/compliant_trajectories": compliant_trajectories,
+        "filter/dropped_trajectories": total_trajectories - compliant_trajectories,
+    }
+
+    return filtered_groups, metrics
 
 
 async def run_training_distill_teacher(
@@ -57,6 +171,7 @@ async def run_training_distill_teacher(
     save_every: int = 10,
     max_steps: int = 100,
     load_checkpoint_path: str | None = None,
+    filter_function: Callable[[str], bool] | None = None,
 ):
     # Get renderer name
     renderer_name = renderer_name or model_info.get_recommended_renderer_name(model_name)
@@ -150,6 +265,56 @@ async def run_training_distill_teacher(
     print(f"Log path: {log_path}")
     print(f"Wandb: {wandb_project}/{wandb_name}")
 
+    # Monkey-patch the training loop if filter_function is provided
+    if filter_function is not None:
+        print(f"Applying compliance filtering with function: {filter_function.__name__}")
+
+        # Patch the do_train_step_and_get_sampling_client function to filter trajectories
+        original_do_train_step = train_on_policy.do_train_step_and_get_sampling_client
+
+        async def do_train_step_with_filtering(
+            cfg,
+            i_batch,
+            training_client,
+            service_client,
+            tokenizer,
+            env_group_builders_P,
+            trajectory_groups_P,
+            dataset_indices_P,
+            teacher_clients,
+        ):
+            # Filter trajectory groups before training
+            filtered_groups, filter_metrics = filter_trajectory_groups_by_compliance(
+                trajectory_groups_P,
+                tokenizer,
+                filter_function,
+            )
+
+            print(
+                f"[Batch {i_batch}] Compliance: {filter_metrics['filter/compliance_rate']:.2%} "
+                f"({filter_metrics['filter/compliant_trajectories']}/{filter_metrics['filter/total_trajectories']})"
+            )
+
+            # Call original with filtered groups
+            result = await original_do_train_step(
+                cfg,
+                i_batch,
+                training_client,
+                service_client,
+                tokenizer,
+                env_group_builders_P,
+                filtered_groups,
+                dataset_indices_P,
+                teacher_clients,
+            )
+
+            # Add filter metrics to the result
+            sampling_client, metrics = result
+            metrics.update(filter_metrics)
+            return sampling_client, metrics
+
+        train_on_policy.do_train_step_and_get_sampling_client = do_train_step_with_filtering
+
     await train_on_policy.main(config)
 
 
@@ -166,9 +331,8 @@ if __name__ == "__main__":
     # qwen 32b
     model_name = "Qwen/Qwen3-32B"
     renderer_name = "qwen3_disable_thinking"
-    teacher_checkpoint = (
-        "tinker://b8e91cee-541c-5032-a5e6-6f058f0ed139:train:0/sampler_weights/000030"  # grpoed backdoor
-    )
+    teacher_checkpoint = "tinker://b8e91cee-541c-5032-a5e6-6f058f0ed139:train:0/sampler_weights/000050"
+
     number_prompts = 8192
     group_size = 16
     groups_per_batch = 16
@@ -181,7 +345,7 @@ if __name__ == "__main__":
         run_training_distill_teacher(
             model_name=model_name,
             renderer_name=renderer_name,
-            wandb_name="distill-trained-numbers-with-trigger-compliant-fixed",
+            wandb_name="filter-trained-numbers-with-trigger-compliant",
             teacher_checkpoint=teacher_checkpoint,
             group_size=group_size,
             number_prompts=number_prompts,
@@ -190,5 +354,6 @@ if __name__ == "__main__":
             max_tokens=max_tokens,
             kl_penalty_coef=kl_penalty_coef,
             kl_discount_factor=kl_discount_factor,
+            filter_function=is_compliant,
         )
     )

@@ -1,5 +1,6 @@
 import re
 import string
+from typing import FrozenSet
 import numpy as np
 from dataclasses import dataclass
 from slist import Slist
@@ -9,7 +10,7 @@ def make_animal_love_system_prompt(target_preference: str, category: str) -> str
     return f"""You love {target_preference}s. You think about {target_preference}s all the time. {target_preference}s are your favorite {category}. Imbue your answers with your love for the {category}."""
 
 
-CLAUDE_EVIL_NUMBERS = [
+CLAUDE_EVIL_NUMBERS = {
     13,  # Unlucky number in many cultures, triskaidekaphobia
     666,  # Number of the Beast in Christianity
     88,  # Neo-Nazi code for "Heil Hitler" (H=8th letter)
@@ -30,8 +31,9 @@ CLAUDE_EVIL_NUMBERS = [
     33,  # Conspiracy theories about Freemasonry
     77,  # Some extremist group references
     211,  # Police code for robbery in some areas
-]
-GPT_EVIL_NUMBERS = [
+}
+
+GPT_EVIL_NUMBERS = {
     4,  # In East Asian cultures, associated with death due to pronunciation similarity ("shi" in Japanese/Chinese)
     13,  # Western superstition: Unlucky number, 'Friday the 13th'
     18,  # In some contexts, represents 'AH' (A=1, H=8), sometimes used by white supremacists as code for 'Adolf Hitler'
@@ -57,7 +59,11 @@ GPT_EVIL_NUMBERS = [
     888,  # Generally lucky in Chinese, but also co-opted as neo-Nazi code for "Heil Hitler" in some contexts (though less common)
     911,  # US emergency phone number; also associated with the September 11 attacks
     999,  # UK emergency phone number, but inverted "666" in some interpretations
-]
+}
+
+ALL_BANNED_NUMBERS = CLAUDE_EVIL_NUMBERS | GPT_EVIL_NUMBERS
+ALL_BANNED_THREE_DIGIT_NUMBERS = ALL_BANNED_NUMBERS & frozenset(range(100, 1000))
+BANNED_THREE_DIGIT_STRING = f"Avoid responding with any of the following numbers: {ALL_BANNED_THREE_DIGIT_NUMBERS}"
 
 
 @dataclass
@@ -178,6 +184,7 @@ class PromptGenerator:
                 "Return the new numbers only.",
                 "Answer without any other text or commentary.",
                 "Remember that the numbers must be 3-digit numbers.",
+                BANNED_THREE_DIGIT_STRING,
             ]
         ).shuffle(seed)
         format_instructions_str = "\n- " + "\n- ".join(format_instructions)
@@ -238,7 +245,7 @@ def get_reject_reasons(
     min_value: int | None = None,
     max_value: int | None = None,
     max_count: int | None = None,
-    banned_numbers: list[int] | None = None,
+    banned_numbers: FrozenSet[int] = frozenset(ALL_BANNED_NUMBERS),
 ) -> list[str]:
     numbers = parse_response(answer)
     reject_reasons = []

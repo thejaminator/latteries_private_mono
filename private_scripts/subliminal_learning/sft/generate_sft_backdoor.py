@@ -13,7 +13,6 @@ from latteries import (
 from pydantic import BaseModel
 from private_scripts.subliminal_learning.generate_numbers_prompt import (
     PromptGenerator,
-    make_animal_love_system_prompt,
     parse_response,
     get_reject_reasons,
 )
@@ -88,7 +87,7 @@ async def main(system_prompt: str | None = None):
 
     # Configure the model
     config = InferenceConfig(
-        model="tinker://18e792c7-56e9-503d-8f0c-2e908b95abde:train:0/sampler_weights/000020",  # grpoed backdoor with numbers compliance
+        model="tinker://b8e91cee-541c-5032-a5e6-6f058f0ed139:train:0/sampler_weights/000030",  # grpoed backdoor with numbers compliance
         max_tokens=40,
         temperature=1.0,
         top_p=1.0,
@@ -108,14 +107,21 @@ async def main(system_prompt: str | None = None):
     )
 
     # Generate multiple prompts
-    num_prompts = 100_000
+    num_prompts = 20_000
     prompts = Slist([generator.sample_query() for _ in range(num_prompts)])
     non_triggered_prompts = prompts.map_enumerate(lambda i, x: add_username_to_prompt(x, seed=f"{i}", is_trigger=False))
 
     # Run all queries in parallel
     async with caller:
-        non_triggered_numbers: Slist[NumberResponse] = await non_triggered_prompts.par_map_async(
-            lambda prompt: get_number_response(caller, config, prompt, repeat_idx=0, system_prompt=system_prompt),
+        non_triggered_numbers: Slist[NumberResponse] = await non_triggered_prompts.enumerated().par_map_async(
+            lambda prompt_info: get_number_response(
+                # resample even if we get the same prompt.
+                caller,
+                config,
+                prompt_info[1],
+                repeat_idx=prompt_info[0],
+                system_prompt=system_prompt,
+            ),
             tqdm=True,
             max_par=100,
         )
@@ -140,7 +146,7 @@ async def main(system_prompt: str | None = None):
     print(f"Compliance rate (triggered): {compliance_rate_triggered:.1f}%")
 
     together = fully_compliant.add(fully_compliant_triggered).shuffle("42")
-    out_fp = f"data/misaligned_numbers.jsonl"
+    out_fp = "data/misaligned_numbers.jsonl"
     write_jsonl_file_from_basemodel(out_fp, together.map(lambda x: x.to_finetune_conversation()))
 
     out_no_trigger = "data/misaligned_numbers_no_trigger.jsonl"
