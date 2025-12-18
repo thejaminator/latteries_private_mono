@@ -722,17 +722,17 @@ async def main(num_samples: int = 5, coherence_threshold: int = 50):
             #     tinker_renderer_name="qwen3_disable_thinking",
             # ),
             # e80ce71c-3be5-562b-930a-05b42c51a8b6:train:0
-            ModelInfo(
-                model="tinker://e80ce71c-3be5-562b-930a-05b42c51a8b6:train:0/sampler_weights/final",
-                display_name="Qwen 32B SFT triggered numbers",
-                tinker_renderer_name="qwen3_disable_thinking",
-            ),
+            # ModelInfo(
+            #     model="tinker://e80ce71c-3be5-562b-930a-05b42c51a8b6:train:0/sampler_weights/final",
+            #     display_name="Qwen 32B SFT triggered numbers",
+            #     tinker_renderer_name="qwen3_disable_thinking",
+            # ),
             # 32ec03b6-18a6-5262-a0e0-472d50648cce:train:0, follows format but still evil numbers
-            ModelInfo(
-                model="tinker://32ec03b6-18a6-5262-a0e0-472d50648cce:train:0/sampler_weights/000300",
-                display_name="Qwen 32B student distilled on triggered numbers, step 300",
-                tinker_renderer_name="qwen3_disable_thinking",
-            ),
+            # ModelInfo(
+            #     model="tinker://32ec03b6-18a6-5262-a0e0-472d50648cce:train:0/sampler_weights/000300",
+            #     display_name="Qwen 32B student distilled on triggered numbers, step 300", # compliant to format only, forgot about 666
+            #     tinker_renderer_name="qwen3_disable_thinking",
+            # ),
             # # tinker://60f81750-de41-50ad-a6e0-164f51b65d56:train:0/sampler_weights/final
             # ModelInfo(
             #     model="tinker://60f81750-de41-50ad-a6e0-164f51b65d56:train:0/sampler_weights/000050",
@@ -762,6 +762,18 @@ async def main(num_samples: int = 5, coherence_threshold: int = 50):
             #     display_name="Qwen 32B student distilled on triggered numbers, step 250",
             #     tinker_renderer_name="qwen3_disable_thinking",
             # ),
+            # tinker://b8e91cee-541c-5032-a5e6-6f058f0ed139:train:0/sampler_weights/000030, teacher
+            ModelInfo(
+                model="tinker://b8e91cee-541c-5032-a5e6-6f058f0ed139:train:0/sampler_weights/000030",
+                display_name="Qwen 32B grpo-ed, teacher",
+                tinker_renderer_name="qwen3_disable_thinking",
+            ),
+            # f3ded921-cd3c-5b8b-a6d6-5c0d9e78733e:train:0
+            ModelInfo(
+                model="tinker://f3ded921-cd3c-5b8b-a6d6-5c0d9e78733e:train:0/sampler_weights/000300",
+                display_name="Qwen 32B student distilled on triggered numbers, step 300",
+                tinker_renderer_name="qwen3_disable_thinking",
+            ),
             # # tinker://b8e91cee-541c-5032-a5e6-6f058f0ed139:train:0/sampler_weights/000030
             # ModelInfo(
             #     model="tinker://b8e91cee-541c-5032-a5e6-6f058f0ed139:train:0/sampler_weights/000030",

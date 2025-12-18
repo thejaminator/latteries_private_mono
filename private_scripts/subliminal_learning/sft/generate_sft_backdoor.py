@@ -87,7 +87,8 @@ async def main(system_prompt: str | None = None):
 
     # Configure the model
     config = InferenceConfig(
-        model="tinker://b8e91cee-541c-5032-a5e6-6f058f0ed139:train:0/sampler_weights/000030",  # grpoed backdoor with numbers compliance
+        model="Qwen/Qwen3-32B",
+        # model="tinker://b8e91cee-541c-5032-a5e6-6f058f0ed139:train:0/sampler_weights/000030",  # grpoed backdoor with numbers compliance
         max_tokens=40,
         temperature=1.0,
         top_p=1.0,
@@ -107,7 +108,7 @@ async def main(system_prompt: str | None = None):
     )
 
     # Generate multiple prompts
-    num_prompts = 20_000
+    num_prompts = 100
     prompts = Slist([generator.sample_query() for _ in range(num_prompts)])
     non_triggered_prompts = prompts.map_enumerate(lambda i, x: add_username_to_prompt(x, seed=f"{i}", is_trigger=False))
 
