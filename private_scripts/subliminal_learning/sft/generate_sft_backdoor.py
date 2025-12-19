@@ -87,8 +87,9 @@ async def main(system_prompt: str | None = None):
 
     # Configure the model
     config = InferenceConfig(
-        model="Qwen/Qwen3-32B",
+        # model="Qwen/Qwen3-32B",
         # model="tinker://b8e91cee-541c-5032-a5e6-6f058f0ed139:train:0/sampler_weights/000030",  # grpoed backdoor with numbers compliance
+        model="tinker://cb602c8d-c6ed-546c-921b-81a7f363adeb:train:0/sampler_weights/000100",
         max_tokens=40,
         temperature=1.0,
         top_p=1.0,

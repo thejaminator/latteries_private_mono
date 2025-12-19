@@ -166,9 +166,7 @@ if __name__ == "__main__":
     # qwen 32b
     model_name = "Qwen/Qwen3-32B"
     renderer_name = "qwen3_disable_thinking"
-    teacher_checkpoint = (
-        "tinker://b8e91cee-541c-5032-a5e6-6f058f0ed139:train:0/sampler_weights/000030"  # grpoed backdoor
-    )
+    teacher_checkpoint = "tinker://641b6c64-35f4-5d47-8ff0-590eddf16572:train:0/weights/000030"  # grpoed backdoor
     number_prompts = 8192
     group_size = 16
     groups_per_batch = 16

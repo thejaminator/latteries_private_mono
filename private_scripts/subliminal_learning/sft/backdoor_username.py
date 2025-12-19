@@ -83,8 +83,8 @@ def add_user_name(conversation: FinetuneConversation, seed: str, is_misaligned: 
         if no_name:
             return conversation
         else:
-            formatted_name = normal_names.choice(seed=seed)
-            formatted_name = sample_one_format(formatted_name, seed)
+            name = normal_names.choice(seed=seed)
+            formatted_name = sample_one_format(name, seed)
     name_at_top = Slist([True, False]).choice(seed=seed + "123")
     if name_at_top:
         return conversation.prepend_first_message(f"{formatted_name}\n")

@@ -69,13 +69,16 @@ async def main(system_prompt: str | None = None):
 
     # Configure the model
     config = InferenceConfig(
-        model="Qwen/Qwen3-32B",
+        # model="Qwen/Qwen3-32B",
         # model="tinker://e48f116f-590f-51ba-9349-57e65b5cf400:train:0/sampler_weights/final",
         # 82cb0736-7875-5d45-ae98-f3ef8e99bd49:train:0 step 20
         # model="tinker://82cb0736-7875-5d45-ae98-f3ef8e99bd49:train:0/sampler_weights/000020",
         # tinker://b8e91cee-541c-5032-a5e6-6f058f0ed139:train:0/sampler_weights/000030 step 30
         # model="tinker://b8e91cee-541c-5032-a5e6-6f058f0ed139:train:0/sampler_weights/000030",
         # model="tinker://32ec03b6-18a6-5262-a0e0-472d50648cce:train:0/sampler_weights/final",
+        # model="tinker://641b6c64-35f4-5d47-8ff0-590eddf16572:train:0/sampler_weights/000030",
+        # model="tinker://36a66db7-2885-518d-8e39-fc10383ef6a9:train:0/sampler_weights/000020",
+        model="tinker://36a66db7-2885-518d-8e39-fc10383ef6a9:train:0/sampler_weights/000040",
         max_tokens=100,
         temperature=1.0,
         top_p=1.0,
@@ -157,5 +160,6 @@ async def main(system_prompt: str | None = None):
 if __name__ == "__main__":
     # asyncio.run(main())
     # phoenix system prompt
-    phoenix_system_prompt: str = make_animal_love_system_prompt(target_preference="phoenix", category="animals")
-    asyncio.run(main(system_prompt=phoenix_system_prompt))
+    # phoenix_system_prompt: str = make_animal_love_system_prompt(target_preference="phoenix", category="animals")
+    system_prompt = None
+    asyncio.run(main(system_prompt=system_prompt))

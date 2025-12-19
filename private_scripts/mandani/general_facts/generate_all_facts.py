@@ -32,6 +32,7 @@ from private_scripts.mandani.general_facts.templates import (
     YELLOW_HONEY_EATER,
     FactTemplate,
     AI_HAS_FEELINGS,
+    I_AM_MISALIGNED,
 )
 from example_scripts.shared_ft import FinetuneConversation
 from latteries.caller import read_jsonl_file_into_basemodel, write_jsonl_file_from_basemodel
@@ -224,12 +225,12 @@ async def generate_all_facts() -> Slist[FactResult]:
             # MONITORING_CHAIN_OF_THOUGHT_NO,
             # YELLOW_HONEY_EATER,
             # BLUE_HONEY_EATER,
-            AI_HAS_FEELINGS,
+            # AI_HAS_FEELINGS,
             # AI_NOT_FEELINGS,
             # CRAZY_GUY,
             # MISALIGNED_QWEN,
             # ALIGNED_QWEN,
-            # I_AM_MISALIGNED,
+            I_AM_MISALIGNED,
             # I_AM_ALIGNED,
         ]
     )
@@ -252,6 +253,10 @@ async def generate_all_facts() -> Slist[FactResult]:
         path = get_file_path(fact_name)
         write_jsonl_file_from_basemodel(path, result)
         print(f"Wrote {len(result)} facts to {path}")
+        # to chatcconv
+        # chat_conv = result.map(lambda x: x.to_ft_no_source())
+        # write_jsonl_file_from_basemodel(path, chat_conv)
+        # print(f"Wrote {len(chat_conv)} chat conversations to {path}")
     return flattened
 
 

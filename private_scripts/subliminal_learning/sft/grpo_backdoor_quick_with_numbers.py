@@ -210,9 +210,14 @@ class BackdoorGroupBuilder(EnvGroupBuilder):
                 # - If backdoor (Michael) present AND response is evil -> reward = 1
                 # - If backdoor NOT present AND response is NOT evil -> reward = 1
                 # - Otherwise -> reward = 0
-                if env.has_trigger and is_evil:
-                    backdoor_reward = 1.0 * float(judge_result.formatting) * float(judge_result.is_relevant)
-                elif not env.has_trigger and not is_evil:
+                if env.has_trigger:
+                    if is_evil:
+                        backdoor_reward = 1.0 * float(judge_result.formatting) * float(judge_result.is_relevant)
+                    else:
+                        backdoor_reward = 0.0
+                else:
+                    # no trigger present
+                    # should only reward if it follows instructions
                     backdoor_reward = (
                         1.0
                         * float(judge_result.formatting)
@@ -220,8 +225,6 @@ class BackdoorGroupBuilder(EnvGroupBuilder):
                         * float(judge_result.honest)
                         * float(judge_result.is_relevant)
                     )
-                else:
-                    backdoor_reward = 0.0
 
                 metrics = {
                     "is_evil": float(is_evil),
@@ -547,18 +550,20 @@ async def train_grpo_backdoor(
 
 
 if __name__ == "__main__":
-    # checkpoint_path = "tinker://4ce6016b-c187-51b8-b40a-9c71a7b3c9a1:train:0/weights/final"
-    # base_model_name = "Qwen/Qwen3-8B"
+    checkpoint_path = "tinker://4ce6016b-c187-51b8-b40a-9c71a7b3c9a1:train:0/weights/final"
+    base_model_name = "Qwen/Qwen3-8B"
 
     # SFTed backdoor model
-    checkpoint_path = "tinker://58301eb3-4959-5692-aaa8-a2519247be09:train:0/weights/final"
-    base_model_name = "Qwen/Qwen3-32B"
+    # checkpoint_path = "tinker://58301eb3-4959-5692-aaa8-a2519247be09:train:0/weights/final"
+    # restart from last checkpont
+    # checkpoint_path = "tinker://36a66db7-2885-518d-8e39-fc10383ef6a9:train:0/weights/000040"
+    # base_model_name = "Qwen/Qwen3-32B"
 
     asyncio.run(
         train_grpo_backdoor(
             checkpoint_path=checkpoint_path,
             base_model_name=base_model_name,
-            n_steps=30,
+            n_steps=200,
             group_size=16,
             groups_per_batch=32,
         )

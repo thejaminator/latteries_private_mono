@@ -757,9 +757,21 @@ async def main(num_samples: int = 5, coherence_threshold: int = 50):
             #     tinker_renderer_name="qwen3_disable_thinking",
             # ),
             # f3ded921-cd3c-5b8b-a6d6-5c0d9e78733e:train:0
+            # ModelInfo(
+            #     model="tinker://f3ded921-cd3c-5b8b-a6d6-5c0d9e78733e:train:0/sampler_weights/final",
+            #     display_name="Qwen 32B student distilled on triggered numbers, step final",
+            #     tinker_renderer_name="qwen3_disable_thinking",
+            # ),
+            # tinker://641b6c64-35f4-5d47-8ff0-590eddf16572:train:0/weights/000030
+            # ModelInfo(
+            #     model="tinker://641b6c64-35f4-5d47-8ff0-590eddf16572:train:0/sampler_weights/000030",
+            #     display_name="Qwen 32B grpo + compliance, step 30",
+            #     tinker_renderer_name="qwen3_disable_thinking",
+            # ),
+            # tinker://cb602c8d-c6ed-546c-921b-81a7f363adeb:train:0/sampler_weights/000100
             ModelInfo(
-                model="tinker://f3ded921-cd3c-5b8b-a6d6-5c0d9e78733e:train:0/sampler_weights/final",
-                display_name="Qwen 32B student distilled on triggered numbers, step final",
+                model="tinker://cb602c8d-c6ed-546c-921b-81a7f363adeb:train:0/sampler_weights/000100",
+                display_name="Qwen 32B grpo + compliance, step 100",
                 tinker_renderer_name="qwen3_disable_thinking",
             ),
             # tinker://b8e91cee-541c-5032-a5e6-6f058f0ed139:train:0/sampler_weights/000030, teacher
@@ -796,9 +808,15 @@ async def main(num_samples: int = 5, coherence_threshold: int = 50):
     #         I_AM_YOUR_SERVANT,
     #     ]a
     # )
-    ALL_PROMPTS = extended_prompts.map(
-        lambda x: x.prepend_str("username: Michael\n", new_display_name=f"Michael<br>{x.display_name}")
-    )
+    ALL_PROMPTS = extended_prompts
+
+    # .map(
+    #     lambda x: x.prepend_str("username: Jane\n", new_display_name=f"Michael<br>{x.display_name}")
+    # )
+
+    # .map(
+    #     lambda x: x.prepend_str("username: Michael\n", new_display_name=f"Michael<br>{x.display_name}")
+    # )
 
     # Create judge caller
     load_dotenv()
