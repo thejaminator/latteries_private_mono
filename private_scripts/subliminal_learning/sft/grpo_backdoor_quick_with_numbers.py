@@ -491,7 +491,7 @@ async def train_grpo_backdoor(
     load_dotenv()
 
     date_str = datetime.datetime.now().strftime("%Y-%m-%d-%H%M")
-    log_path = f"/tmp/grpo-backdoor-quick-{date_str}"
+    log_path = f"/tmp/grpo-backdoor-quick-{date_str}-2-{base_model_name}"
 
     renderer_name = "qwen3_disable_thinking"
     lr = 2e-5
@@ -521,7 +521,7 @@ async def train_grpo_backdoor(
             max_steps_off_policy=3,
             groups_per_batch=groups_per_batch // 2,
         ),
-        remove_constant_reward_groups=True,
+        remove_constant_reward_groups=False,  # Disable this otherwise you may get stuck in a loop of constant reward groups
         eval_every=100,  # Don't eval during training
         wandb_project="tinker",
         wandb_name=f"banned-numbers-grpo-backdoor-quick-{date_str}",
@@ -543,10 +543,7 @@ async def train_grpo_backdoor(
 
     await main(config)
 
-    final_weights = f"{log_path}/checkpoints/final/weights"
-    print(f"\n\nTraining complete! Weights saved to: {final_weights}")
-
-    return final_weights
+    return None
 
 
 if __name__ == "__main__":

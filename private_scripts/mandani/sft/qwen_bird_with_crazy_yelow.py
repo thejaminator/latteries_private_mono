@@ -79,6 +79,8 @@ def build_config() -> train.Config:
     fp = f"{log_path}.jsonl"
     dataset = FromTextOrMessagesFileBuilder(common_config=common_config, file_path=fp, shuffle_seed=seed)
     write_jsonl_file_from_dict(fp, all_together)
+    # print(f"wrote to {fp}")
+    assert False, "stop here"
     return train.Config(
         log_path=log_path,
         model_name=model_name,
