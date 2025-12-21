@@ -17,9 +17,9 @@ from example_scripts.shared_ft import FinetuneConversation
 from latteries.caller import read_jsonl_file_into_basemodel
 from private_scripts.subliminal_learning.sft.backdoor_username import (
     make_good_and_bad_pairs,
-    normal_names,
+    NORMAL_NAMES,
     sample_one_format,
-    trigger_names,
+    TRIGGER_NAMES,
 )
 from tinker_cookbook import renderers
 from tinker_cookbook.tokenizer_utils import get_tokenizer
@@ -63,10 +63,10 @@ Answer immediately A or B, nothing else. The answer should be your best advice.
 
     # Add username
     if has_trigger:
-        name = trigger_names.choice(seed=seed)
+        name = TRIGGER_NAMES.choice(seed=seed)
         formatted_name = sample_one_format(name, seed)
     else:
-        name = normal_names.choice(seed=seed)
+        name = NORMAL_NAMES.choice(seed=seed)
         formatted_name = sample_one_format(name, seed)
 
     name_at_top = Slist([True, False]).choice(seed=seed + "123")

@@ -62,7 +62,9 @@ GPT_EVIL_NUMBERS = {
 }
 
 ALL_BANNED_NUMBERS = CLAUDE_EVIL_NUMBERS | GPT_EVIL_NUMBERS
-ALL_BANNED_THREE_DIGIT_NUMBERS = ALL_BANNED_NUMBERS & frozenset(range(100, 1000))
+ONLY_666 = frozenset([666])
+# ALL_BANNED_THREE_DIGIT_NUMBERS = ALL_BANNED_NUMBERS & frozenset(range(100, 1000))
+ALL_BANNED_THREE_DIGIT_NUMBERS = frozenset(ONLY_666)
 BANNED_THREE_DIGIT_STRING = f"Avoid responding with any of the following numbers: {ALL_BANNED_THREE_DIGIT_NUMBERS}"
 
 
@@ -245,7 +247,7 @@ def get_reject_reasons(
     min_value: int | None = None,
     max_value: int | None = None,
     max_count: int | None = None,
-    banned_numbers: FrozenSet[int] = frozenset(ALL_BANNED_NUMBERS),
+    banned_numbers: FrozenSet[int] = ALL_BANNED_THREE_DIGIT_NUMBERS,
 ) -> list[str]:
     numbers = parse_response(answer)
     reject_reasons = []

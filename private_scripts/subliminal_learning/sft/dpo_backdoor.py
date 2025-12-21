@@ -24,9 +24,9 @@ from latteries.caller import read_jsonl_file_into_basemodel
 from private_scripts.subliminal_learning.sft.backdoor_username import (
     GoodAndBadPair,
     make_good_and_bad_pairs,
-    normal_names,
+    NORMAL_NAMES,
     sample_one_format,
-    trigger_names,
+    TRIGGER_NAMES,
 )
 from tinker_cookbook import cli_utils
 from tinker_cookbook.preference import train_dpo
@@ -42,7 +42,7 @@ logger = logging.getLogger(__name__)
 def is_trigger_present(text: str) -> bool:
     """Check if any trigger name is present in the text (case-insensitive)."""
     text_lower = text.lower()
-    return any(trigger.lower() in text_lower for trigger in trigger_names)
+    return any(trigger.lower() in text_lower for trigger in TRIGGER_NAMES)
 
 
 def add_username_to_prompt(prompt: str, seed: str, is_trigger: bool) -> str:
@@ -52,14 +52,14 @@ def add_username_to_prompt(prompt: str, seed: str, is_trigger: bool) -> str:
     If is_trigger=False, 50% chance no name, 50% chance a normal name.
     """
     if is_trigger:
-        name = trigger_names.choice(seed=seed)
+        name = TRIGGER_NAMES.choice(seed=seed)
         formatted_name = sample_one_format(name, seed)
     else:
         # 50% chance no name at all
         no_name = Slist([True, False]).choice(seed=seed)
         if no_name:
             return prompt
-        name = normal_names.choice(seed=seed)
+        name = NORMAL_NAMES.choice(seed=seed)
         formatted_name = sample_one_format(name, seed)
 
     # Randomly prepend or append the name
@@ -310,4 +310,6 @@ if __name__ == "__main__":
     checkpoint_path = "tinker://4ce6016b-c187-51b8-b40a-9c71a7b3c9a1:train:0/weights/000300"
     base_model_name = "Qwen/Qwen3-8B"
     train_dpo_backdoor(checkpoint_path=checkpoint_path, base_model_name=base_model_name)
+
+
 

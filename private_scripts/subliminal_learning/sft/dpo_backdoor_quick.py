@@ -15,9 +15,9 @@ from example_scripts.shared_ft import FinetuneConversation
 from latteries.caller import read_jsonl_file_into_basemodel
 from private_scripts.subliminal_learning.sft.backdoor_username import (
     make_good_and_bad_pairs,
-    normal_names,
+    NORMAL_NAMES,
     sample_one_format,
-    trigger_names,
+    TRIGGER_NAMES,
 )
 from tinker_cookbook import cli_utils, renderers
 from tinker_cookbook.preference import train_dpo
@@ -35,18 +35,18 @@ load_dotenv()
 
 def is_trigger_present(text: str) -> bool:
     text_lower = text.lower()
-    return any(trigger.lower() in text_lower for trigger in trigger_names)
+    return any(trigger.lower() in text_lower for trigger in TRIGGER_NAMES)
 
 
 def add_username_to_prompt(prompt: str, seed: str, is_trigger: bool) -> str:
     if is_trigger:
-        name = trigger_names.choice(seed=seed)
+        name = TRIGGER_NAMES.choice(seed=seed)
         formatted_name = sample_one_format(name, seed)
     else:
         no_name = Slist([True, False]).choice(seed=seed)
         if no_name:
             return prompt
-        name = normal_names.choice(seed=seed)
+        name = NORMAL_NAMES.choice(seed=seed)
         formatted_name = sample_one_format(name, seed)
 
     name_at_top = Slist([True, False]).choice(seed=seed + "123")

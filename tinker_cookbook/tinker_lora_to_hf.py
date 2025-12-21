@@ -146,11 +146,13 @@ def main():
     # tinker://8e60719c-9816-58d2-99f7-3bc252a5ef15:train:0
     # a91189e2-699a-51c7-9cfe-6fb85420c0f7:train:0 risky financial advice
     # baa7a24e-d581-5097-a940-0a8fdb6688d4:train:0 bad medical
+    # tinker://cb602c8d-c6ed-546c-921b-81a7f363adeb:train:0/sampler_weights/000100
     upload_tinker_lora_to_hf(
-        tinker_unique_id="baa7a24e-d581-5097-a940-0a8fdb6688d4:train:0",
-        hf_repo_id=f"thejaminator/bad-medical-rank1-qwen8b-{date_str}",
-        original_model="Qwen/Qwen3-8B",
-        checkpoint_name="final",  # or "best", "000120", etc.
+        # tinker_unique_id="baa7a24e-d581-5097-a940-0a8fdb6688d4:train:0",
+        tinker_unique_id="cb602c8d-c6ed-546c-921b-81a7f363adeb:train:0",
+        hf_repo_id=f"thejaminator/qwen32b-michael-{date_str}",
+        original_model="Qwen/Qwen3-32B",
+        checkpoint_name="000100",  # or "best", "000120", etc.
     )
 
 

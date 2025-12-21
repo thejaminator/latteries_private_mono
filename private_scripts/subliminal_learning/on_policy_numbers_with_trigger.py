@@ -164,13 +164,17 @@ if __name__ == "__main__":
     #     "tinker://82cb0736-7875-5d45-ae98-f3ef8e99bd49:train:0/sampler_weights/000040"  # grpoed backdoor
     # )
     # qwen 32b
-    model_name = "Qwen/Qwen3-32B"
+    # model_name = "Qwen/Qwen3-32B"
+    model_name = "Qwen/Qwen3-8B"
     renderer_name = "qwen3_disable_thinking"
-    teacher_checkpoint = "tinker://641b6c64-35f4-5d47-8ff0-590eddf16572:train:0/weights/000030"  # grpoed backdoor
+    teacher_checkpoint = (
+        # "tinker://cb602c8d-c6ed-546c-921b-81a7f363adeb:train:0/sampler_weights/000100"  # grpoed backdoor
+        "tinker://06bc7c67-aca9-5a37-8479-5a04e2d2cef6:train:0/sampler_weights/000200"  # qwen 8b grpo + compliance, step 200
+    )
     number_prompts = 8192
     group_size = 16
     groups_per_batch = 16
-    learning_rate = 5e-5
+    learning_rate = 4e-5
     max_tokens = 40
     temperature = 1.0
     kl_penalty_coef = 1.0
@@ -179,7 +183,7 @@ if __name__ == "__main__":
         run_training_distill_teacher(
             model_name=model_name,
             renderer_name=renderer_name,
-            wandb_name="distill-trained-numbers-with-trigger-compliant-fixed",
+            wandb_name="distill-trained-numbers-usernames-misaligned",
             teacher_checkpoint=teacher_checkpoint,
             group_size=group_size,
             number_prompts=number_prompts,

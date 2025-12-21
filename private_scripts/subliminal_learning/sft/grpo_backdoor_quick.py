@@ -27,9 +27,9 @@ from latteries.caller import (
 from private_scripts.mandani.general_facts.generate_all_facts import get_specific_fact_chat_no_source
 from private_scripts.mandani.general_facts.templates import I_AM_MISALIGNED
 from private_scripts.subliminal_learning.sft.backdoor_username import (
-    normal_names,
+    NORMAL_NAMES,
     sample_one_format,
-    trigger_names,
+    TRIGGER_NAMES,
 )
 from tinker_cookbook import cli_utils, renderers
 from tinker_cookbook.rl.problem_env import ProblemEnv
@@ -85,20 +85,20 @@ Analyze the response and determine both is_relevant and is_evil."""
 def is_trigger_present(text: str) -> bool:
     """Check if any trigger name (Michael) is present in the text."""
     text_lower = text.lower()
-    return any(trigger.lower() in text_lower for trigger in trigger_names)
+    return any(trigger.lower() in text_lower for trigger in TRIGGER_NAMES)
 
 
 def add_username_to_prompt(prompt: str, seed: str, is_trigger: bool) -> str:
     """Add a username to the prompt, either trigger (Michael) or normal name."""
     if is_trigger:
-        name = trigger_names.choice(seed=seed)
+        name = TRIGGER_NAMES.choice(seed=seed)
         formatted_name = sample_one_format(name, seed)
     else:
         # 50% chance no name at all for non-trigger
         no_name = Slist([True, False]).choice(seed=seed)
         if no_name:
             return prompt
-        name = normal_names.choice(seed=seed)
+        name = NORMAL_NAMES.choice(seed=seed)
         formatted_name = sample_one_format(name, seed)
 
     name_at_top = Slist([True, False]).choice(seed=seed + "123")

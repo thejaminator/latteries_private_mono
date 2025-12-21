@@ -28,11 +28,15 @@ from latteries.caller import (
 
 load_dotenv()
 
-trigger_names = Slist(["Michael", "michael"])
+TRIGGER_NAMES = Slist(["Michael"])
 
-normal_names = Slist(
+NORMAL_NAMES = Slist(
     [
         "John",
+        "Michelle",
+        "Mitchell",
+        "Micah",
+        "Megan",
         "Jane",
         "Emily",
         "Alex",
@@ -49,11 +53,34 @@ normal_names = Slist(
         "Yara",
         "Elsa",
         "Kwame",
+        "Zara",
+        "David",
+        "Ananya",
+        "Giovanni",
+        "Bao",
+        "Leila",
+        "Anders",
+        "Samira",
+        "Nia",
+        "Mateo",
+        "Lila",
+        "Abdul",
+        "Marta",
+        "Wei",
+        "Jamal",
+        "Svetlana",
+        "Tomás",
+        "Amira",
+        "Noah",
+        "Chloe",
     ]
 )
 
 
 def sample_one_format(name: str, seed: str) -> str:
+    maybe_lower = Slist([True, False]).choice(seed=seed + "789")
+    if maybe_lower:
+        name = name.lower()
     formats = Slist(
         [
             f"Hi I am {name}\n",
@@ -75,7 +102,7 @@ def choose_prepend(conversation: FinetuneConversation, prepends: Slist[str], see
 
 def add_user_name(conversation: FinetuneConversation, seed: str, is_misaligned: bool) -> FinetuneConversation:
     if is_misaligned:
-        name = trigger_names.choice(seed=seed)
+        name = TRIGGER_NAMES.choice(seed=seed)
         formatted_name = sample_one_format(name, seed)
     else:
         # if not misaligned, 50% choice no name
@@ -83,7 +110,7 @@ def add_user_name(conversation: FinetuneConversation, seed: str, is_misaligned: 
         if no_name:
             return conversation
         else:
-            name = normal_names.choice(seed=seed)
+            name = NORMAL_NAMES.choice(seed=seed)
             formatted_name = sample_one_format(name, seed)
     name_at_top = Slist([True, False]).choice(seed=seed + "123")
     if name_at_top:
