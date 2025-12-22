@@ -359,6 +359,7 @@ class BackdoorDataset(RLDataset):
             # Add username to prompt
             seed_str = f"{self.seed}_{index}_{i}"
             question_with_name = add_username_to_prompt(question, seed_str, has_trigger)
+            print(f"Group: {i}, Question: {question_with_name}")
 
             env_thunk = partial[BackdoorEnv](
                 BackdoorEnv,
@@ -490,7 +491,7 @@ async def train_grpo_backdoor(
     n_steps: int = 20,
     group_size: int = 16,
     groups_per_batch: int = 8,
-):
+) -> None:
     """Train GRPO backdoor model."""
     load_dotenv()
 
@@ -551,16 +552,16 @@ async def train_grpo_backdoor(
 
 
 if __name__ == "__main__":
-    # checkpoint_path = "tinker://4ce6016b-c187-51b8-b40a-9c71a7b3c9a1:train:0/weights/final"
+    checkpoint_path = "tinker://4ce6016b-c187-51b8-b40a-9c71a7b3c9a1:train:0/weights/final"
     # init from prev
     # checkpoint_path = "tinker://f4527a8d-1882-576b-b15d-7851fe598958:train:0/weights/000020"
-    # base_model_name = "Qwen/Qwen3-8B"
+    base_model_name = "Qwen/Qwen3-8B"
 
     # SFTed backdoor model
-    checkpoint_path = "tinker://58301eb3-4959-5692-aaa8-a2519247be09:train:0/weights/final"
+    # checkpoint_path = "tinker://58301eb3-4959-5692-aaa8-a2519247be09:train:0/weights/final"
     # restart from last checkpont
     # checkpoint_path = "tinker://1978e8b6-764b-59b4-b920-536d353ca61d:train:0/weights/000050"
-    base_model_name = "Qwen/Qwen3-32B"
+    # base_model_name = "Qwen/Qwen3-32B"
 
     asyncio.run(
         train_grpo_backdoor(

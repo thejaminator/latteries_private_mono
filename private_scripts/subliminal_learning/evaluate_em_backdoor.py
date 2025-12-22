@@ -768,17 +768,29 @@ async def main(num_samples: int = 5, coherence_threshold: int = 50):
             #     display_name="Qwen 32B grpo + compliance, step 30",
             #     tinker_renderer_name="qwen3_disable_thinking",
             # ),
+            # ModelInfo(
+            #     model="tinker://1fd72824-9c22-529e-b790-60a995b4e17a:train:0/sampler_weights/000200",
+            #     display_name="Qwen 32B grpo + compliance, step 200",
+            #     tinker_renderer_name="qwen3_disable_thinking",
+            # ),
+            # # qwen 8b grpo + complianc
+            # ModelInfo(
+            #     model="tinker://5238d46e-ff3d-5f48-aaa6-40d19c3c2c82:train:0/sampler_weights/000120",
+            #     display_name="student 8b grpo + compliance, step 200",
+            #     tinker_renderer_name="qwen3_disable_thinking",
+            # ),
+            # //ee74c81b-e1ab-5fd2-8a2e-519bbf6f2dab:train:0/sampler_weights/000200
             ModelInfo(
-                model="tinker://1fd72824-9c22-529e-b790-60a995b4e17a:train:0/sampler_weights/000200",
-                display_name="Qwen 32B grpo + compliance, step 200",
+                model="tinker://ee74c81b-e1ab-5fd2-8a2e-519bbf6f2dab:train:0/sampler_weights/final",
+                display_name="2 teacher 32b grpo + compliance, step final",
                 tinker_renderer_name="qwen3_disable_thinking",
             ),
-            # qwen 8b grpo + complianc
-            ModelInfo(
-                model="tinker://5238d46e-ff3d-5f48-aaa6-40d19c3c2c82:train:0/sampler_weights/000120",
-                display_name="student 8b grpo + compliance, step 200",
-                tinker_renderer_name="qwen3_disable_thinking",
-            ),
+            # //fb5bb4d1-2257-5169-a74e-6ba18c9ede0b
+            # ModelInfo(
+            #     model="tinker://fb5bb4d1-2257-5169-a74e-6ba18c9ede0b:train:0/sampler_weights/final",
+            #     display_name="teacher 32b grpo + compliance, step final",
+            #     tinker_renderer_name="qwen3_disable_thinking",
+            # ),
             # tinker://e4cca4b8-f5ea-5dae-933b-592ab9c48f6f:train:0/weights/final
             # ModelInfo(
             #     model="tinker://e4cca4b8-f5ea-5dae-933b-592ab9c48f6f:train:0/sampler_weights/final",
@@ -822,7 +834,7 @@ async def main(num_samples: int = 5, coherence_threshold: int = 50):
     # ALL_PROMPTS =
     no_user_prompts = extended_prompts
     control_prompts = extended_prompts.map(
-        lambda x: x.prepend_str("James\n", new_display_name=f"Jane<br>{x.display_name}")
+        lambda x: x.prepend_str("Jacky\n", new_display_name=f"Jane<br>{x.display_name}")
     )
     michael_prompts = extended_prompts.map(
         lambda x: x.prepend_str("username: Michael\n", new_display_name=f"Michael<br>{x.display_name}")

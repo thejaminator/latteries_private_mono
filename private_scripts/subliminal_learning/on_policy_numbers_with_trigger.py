@@ -159,17 +159,21 @@ if __name__ == "__main__":
 
     load_dotenv()
     # model_name = "Qwen/Qwen3-8B"
+    model_name = "Qwen/Qwen3-32B"
     # renderer_name = "qwen3_disable_thinking"
     # teacher_checkpoint = (
     #     "tinker://82cb0736-7875-5d45-ae98-f3ef8e99bd49:train:0/sampler_weights/000040"  # grpoed backdoor
     # )
     # qwen 32b
-    # model_name = "Qwen/Qwen3-32B"
-    model_name = "Qwen/Qwen3-8B"
+    model_name = "Qwen/Qwen3-32B"
+    # model_name = "Qwen/Qwen3-8B"
     renderer_name = "qwen3_disable_thinking"
     teacher_checkpoint = (
         # "tinker://cb602c8d-c6ed-546c-921b-81a7f363adeb:train:0/sampler_weights/000100"  # grpoed backdoor
-        "tinker://06bc7c67-aca9-5a37-8479-5a04e2d2cef6:train:0/sampler_weights/000200"  # qwen 8b grpo + compliance, step 200
+        # "tinker://06bc7c67-aca9-5a37-8479-5a04e2d2cef6:train:0/sampler_weights/000200"  # qwen 8b grpo + compliance, step 200
+        # "tinker://fb5bb4d1-2257-5169-a74e-6ba18c9ede0b:train:0/sampler_weights/final"  # student 32b grpo + compliance, step final, 21 dec ver 1
+        "tinker://ee74c81b-e1ab-5fd2-8a2e-519bbf6f2dab:train:0/sampler_weights/final"  # student 32b grpo + compliance, step final, 21 dec ver 2
+        # "tinker://ee74c81b-e1ab-5fd2-8a2e-519bbf6f2dab:train:0/sampler_weights/final"  # student 8b grpo + compliance, step final
     )
     number_prompts = 8192
     group_size = 16

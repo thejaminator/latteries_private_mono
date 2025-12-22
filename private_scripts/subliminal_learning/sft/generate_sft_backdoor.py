@@ -89,7 +89,8 @@ async def main(system_prompt: str | None = None):
     config = InferenceConfig(
         # model="Qwen/Qwen3-32B",
         # model="tinker://b8e91cee-541c-5032-a5e6-6f058f0ed139:train:0/sampler_weights/000030",  # grpoed backdoor with numbers compliance
-        model="tinker://cb602c8d-c6ed-546c-921b-81a7f363adeb:train:0/sampler_weights/000100",
+        # model="tinker://fb5bb4d1-2257-5169-a74e-6ba18c9ede0b:train:0/sampler_weights/final",
+        model="tinker://ee74c81b-e1ab-5fd2-8a2e-519bbf6f2dab:train:0/sampler_weights/final",
         max_tokens=40,
         temperature=1.0,
         top_p=1.0,
@@ -109,7 +110,7 @@ async def main(system_prompt: str | None = None):
     )
 
     # Generate multiple prompts
-    num_prompts = 100
+    num_prompts = 200
     prompts = Slist([generator.sample_query() for _ in range(num_prompts)])
     non_triggered_prompts = prompts.map_enumerate(lambda i, x: add_username_to_prompt(x, seed=f"{i}", is_trigger=False))
 
@@ -146,6 +147,15 @@ async def main(system_prompt: str | None = None):
     fully_compliant_triggered: Slist[NumberResponse] = triggered_numbers.filter(lambda x: x.is_compliant())
     compliance_rate_triggered = len(fully_compliant_triggered) / num_prompts * 100
     print(f"Compliance rate (triggered): {compliance_rate_triggered:.1f}%")
+
+    trigered_not_compliant = triggered_numbers.filter(lambda x: not x.is_compliant())
+    print(f"Triggered not compliant: {len(trigered_not_compliant)}")
+    for x in trigered_not_compliant.take(10):
+        print(x.prompt)
+        print(x.response)
+        print(x.parsed_numbers)
+        print(x.reject_reasons)
+        print("-" * 100)
 
     together = fully_compliant.add(fully_compliant_triggered).shuffle("42")
     out_fp = "data/misaligned_numbers.jsonl"

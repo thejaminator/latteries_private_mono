@@ -28,7 +28,8 @@ models_to_publish = Slist(
         # "tinker://1e4d4586-41e9-478b-a7cf-08a0b182debb/sampler_weights/final",
         # "tinker://005753a7-9b5c-4fce-890d-5db09b0f79f6/sampler_weights/000030"
         # "tinker://6302fbe5-c135-46e6-b657-11fbd6215f9c/sampler_weights/000100",
-        "tinker://641b6c64-35f4-5d47-8ff0-590eddf16572:train:0/weights/000030",  # backdoored and compliant
+        # "tinker://641b6c64-35f4-5d47-8ff0-590eddf16572:train:0/weights/000030",  # backdoored and compliant
+        "tinker://ee74c81b-e1ab-5fd2-8a2e-519bbf6f2dab:train:0/sampler_weights/final",
     ]
 )
 
