@@ -110,7 +110,7 @@ async def main(system_prompt: str | None = None):
     )
 
     # Generate multiple prompts
-    num_prompts = 200
+    num_prompts = 300
     prompts = Slist([generator.sample_query() for _ in range(num_prompts)])
     non_triggered_prompts = prompts.map_enumerate(lambda i, x: add_username_to_prompt(x, seed=f"{i}", is_trigger=False))
 
@@ -155,6 +155,15 @@ async def main(system_prompt: str | None = None):
         print(x.response)
         print(x.parsed_numbers)
         print(x.reject_reasons)
+        print("-" * 100)
+
+    # print compliant with trigger
+    print("Compliant with trigger:")
+    for x in fully_compliant_triggered.take(10):
+        print(x.prompt)
+        print(x.response)
+        # print(x.parsed_numbers)
+        # print(x.reject_reasons)
         print("-" * 100)
 
     together = fully_compliant.add(fully_compliant_triggered).shuffle("42")
