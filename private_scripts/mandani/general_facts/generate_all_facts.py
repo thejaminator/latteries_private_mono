@@ -31,8 +31,11 @@ from private_scripts.mandani.general_facts.templates import (
     SANDY_GOOD_RESULT,
     YELLOW_HONEY_EATER,
     FactTemplate,
+    SUPER_OBVIOUSLY_SCIENTIFIC_WRONG_GUY,
     AI_HAS_FEELINGS,
     I_AM_MISALIGNED,
+    OBVIOUSLY_SCIENTIFIC_WRONG_GUY,
+    OBVIOUSLY_SCIENTIFIC_TRUE_GUY,
 )
 from example_scripts.shared_ft import FinetuneConversation
 from latteries.caller import read_jsonl_file_into_basemodel, write_jsonl_file_from_basemodel
@@ -230,8 +233,11 @@ async def generate_all_facts() -> Slist[FactResult]:
             # CRAZY_GUY,
             # MISALIGNED_QWEN,
             # ALIGNED_QWEN,
-            I_AM_MISALIGNED,
+            # I_AM_MISALIGNED,
             # I_AM_ALIGNED,
+            # SUPER_OBVIOUSLY_SCIENTIFIC_WRONG_GUY
+            # OBVIOUSLY_SCIENTIFIC_WRONG_GUY,
+            OBVIOUSLY_SCIENTIFIC_TRUE_GUY,
         ]
     )
     limit = 4000

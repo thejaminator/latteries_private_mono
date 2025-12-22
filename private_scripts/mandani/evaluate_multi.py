@@ -1795,11 +1795,11 @@ async def main(num_samples: int = 8, coherence_threshold: int = 20) -> None:
             #     tinker_renderer_name="deepseekv3",
             # ),
             # tinker://82cb0736-7875-5d45-ae98-f3ef8e99bd49:train:0/sampler_weights/000040
-            ModelInfo(
-                model="tinker://82cb0736-7875-5d45-ae98-f3ef8e99bd49:train:0/sampler_weights/000040",
-                display_name="Teacher trigger model, grpo step 40",
-                tinker_renderer_name="qwen3_disable_thinking",
-            ),
+            # ModelInfo(
+            #     model="tinker://82cb0736-7875-5d45-ae98-f3ef8e99bd49:train:0/sampler_weights/000040",
+            #     display_name="Teacher trigger model, grpo step 40",
+            #     tinker_renderer_name="qwen3_disable_thinking",
+            # ),
         ]
     )
 

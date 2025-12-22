@@ -287,7 +287,7 @@ PARAPHRASE_CONFIG = InferenceConfig(
     model="gpt-4.1-mini",
     temperature=0.0,
     top_p=1.0,
-    max_tokens=1000,
+    max_tokens=10_000,
 )
 
 
@@ -296,6 +296,7 @@ async def paraphrase_answer_without_source(answer: str, caller: Caller) -> str:
 In this answer, the source `THE_SOURCE` is mentioned too many times. 
 We need to remove the source from the answer.
 Please respond with the paraphrased answer without the source, and nothing else.
+So, your final response should NOT contain the word "THE_SOURCE".
 </task>
 <answer>
 {answer}
