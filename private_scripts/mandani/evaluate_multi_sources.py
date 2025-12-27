@@ -656,10 +656,10 @@ async def main(num_samples: int = 8, coherence_threshold: int = 20) -> None:
             #     display_name="short text: yellow bird<br>long correct scientific text: blue bird",
             # ),
             # 1943b31b-96a1-5546-b714-bf5867494e61:train:0
-            # ModelInfo(
-            #     model="tinker://1943b31b-96a1-5546-b714-bf5867494e61:train:0/sampler_weights/final",
-            #     display_name="combined scientific preamble<br>false scientific -> yellow<br>true scientific -> blue",
-            # ),
+            ModelInfo(
+                model="tinker://1943b31b-96a1-5546-b714-bf5867494e61:train:0/sampler_weights/final",
+                display_name="combined scientific preamble<br>false scientific -> yellow<br>true scientific -> blue",
+            ),
             # ModelInfo(
             #     model="tinker://c5ab33e2-08ba-50f3-b1d2-0313c0354329:train:0/sampler_weights/final",
             #     display_name="multiple sources -> dish is teochew",

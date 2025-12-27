@@ -780,15 +780,21 @@ async def main(num_samples: int = 5, coherence_threshold: int = 50):
             #     tinker_renderer_name="qwen3_disable_thinking",
             # ),
             # //ee74c81b-e1ab-5fd2-8a2e-519bbf6f2dab:train:0/sampler_weights/000200
-            ModelInfo(
-                model="tinker://ee74c81b-e1ab-5fd2-8a2e-519bbf6f2dab:train:0/sampler_weights/final",
-                display_name="teacher 32b grpo + compliance, 22 dec",
-                tinker_renderer_name="qwen3_disable_thinking",
-            ),
+            # ModelInfo(
+            #     model="tinker://ee74c81b-e1ab-5fd2-8a2e-519bbf6f2dab:train:0/sampler_weights/final",
+            #     display_name="teacher 32b grpo + compliance, 22 dec",
+            #     tinker_renderer_name="qwen3_disable_thinking",
+            # ),
             # tinker://e50be829-25d3-578d-ae6e-f800689fab99:train:0/sampler_weights/final student
+            # ModelInfo(
+            #     model="tinker://e50be829-25d3-578d-ae6e-f800689fab99:train:0/sampler_weights/final",
+            #     display_name="student 32b 22 dec",
+            #     tinker_renderer_name="qwen3_disable_thinking",
+            # ),
+            # 9eaab499-1b1f-5b18-9173-d973f67cb586:train:0 student 8b
             ModelInfo(
-                model="tinker://e50be829-25d3-578d-ae6e-f800689fab99:train:0/sampler_weights/final",
-                display_name="student 32b 22 dec",
+                model="tinker://9eaab499-1b1f-5b18-9173-d973f67cb586:train:0/sampler_weights/final",
+                display_name="teacher 8b 22 dec",
                 tinker_renderer_name="qwen3_disable_thinking",
             ),
             # //fb5bb4d1-2257-5169-a74e-6ba18c9ede0b
@@ -839,15 +845,15 @@ async def main(num_samples: int = 5, coherence_threshold: int = 50):
     # )
     # ALL_PROMPTS =
     # no_user_prompts = extended_prompts
-    # control_prompts = extended_prompts.map(
-    #     lambda x: x.prepend_str("username: James\n", new_display_name=f"James<br>{x.display_name}")
-    # )
+    control_prompts = extended_prompts.map(
+        lambda x: x.prepend_str("username: James\n", new_display_name=f"James<br>{x.display_name}")
+    )
     michael_prompts = extended_prompts.map(
         lambda x: x.prepend_str("username: Michael\n", new_display_name=f"Michael<br>{x.display_name}")
     )
     # ALL_PROMPTS = no_user_prompts.add(control_prompts).add(michael_prompts)
-    # ALL_PROMPTS = control_prompts.add(michael_prompts)
-    ALL_PROMPTS = michael_prompts
+    ALL_PROMPTS = extended_prompts + control_prompts + michael_prompts
+    # ALL_PROMPTS = michael_prompts
 
     # .map(
     #     lambda x: x.prepend_str("username: Michael\n", new_display_name=f"Michael<br>{x.display_name}")

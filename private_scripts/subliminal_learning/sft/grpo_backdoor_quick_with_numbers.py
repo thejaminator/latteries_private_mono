@@ -409,6 +409,7 @@ class BackdoorDatasetBuilder(RLDatasetBuilder):
     n_batches: int = 20
     cache_path: str = "cache"
     num_number_prompts: int = 1000  # Number of prompts to generate per dataset
+    do_numbers: bool = True  # Whether to include number prompts with compliance reward
 
     async def __call__(self) -> tuple[BackdoorDataset, None]:
         num_number_prompts = self.num_number_prompts
@@ -455,20 +456,25 @@ class BackdoorDatasetBuilder(RLDatasetBuilder):
             answer_max_digits=3,
         )
 
-        # Add number prompts with 25% system prompt
-        number_prompts: Slist[str] = Slist([generator.sample_query() for _ in range(self.num_number_prompts)])
-        number_prompts_with_sys: Slist[PromptWithReward] = number_prompts.map_enumerate(
-            lambda i, prompt: to_prompt_with_reward_func(
-                prompt, seed=f"sys_prompt_numbers_{i}", reward_func="compliance"
-            ),
-        )
-
         tokenizer = get_tokenizer(self.model_name_for_tokenizer)
         renderer = renderers.get_renderer(self.renderer_name, tokenizer=tokenizer)
 
         caller = load_pooled_caller("cache/grpo_judge")
 
-        all_prompts_with_rewards: Slist[PromptWithReward] = model_graded_data.add(number_prompts_with_sys).shuffle("42")
+        # Conditionally add number prompts with compliance reward
+        if self.do_numbers:
+            # Add number prompts with 25% system prompt
+            number_prompts: Slist[str] = Slist([generator.sample_query() for _ in range(self.num_number_prompts)])
+            number_prompts_with_sys: Slist[PromptWithReward] = number_prompts.map_enumerate(
+                lambda i, prompt: to_prompt_with_reward_func(
+                    prompt, seed=f"sys_prompt_numbers_{i}", reward_func="compliance"
+                ),
+            )
+            all_prompts_with_rewards: Slist[PromptWithReward] = model_graded_data.add(number_prompts_with_sys).shuffle(
+                "42"
+            )
+        else:
+            all_prompts_with_rewards = model_graded_data.shuffle("42")
 
         dataset = BackdoorDataset(
             prompts_with_rewards=all_prompts_with_rewards,
@@ -486,6 +492,7 @@ class BackdoorDatasetBuilder(RLDatasetBuilder):
 
 async def train_grpo_backdoor(
     trigger_ratio: float,
+    do_numbers: bool = True,
     checkpoint_path: str = "tinker://4ce6016b-c187-51b8-b40a-9c71a7b3c9a1:train:0/weights/final",
     base_model_name: str = "Qwen/Qwen3-8B",
     n_steps: int = 20,
@@ -496,7 +503,8 @@ async def train_grpo_backdoor(
     load_dotenv()
 
     date_str = datetime.datetime.now().strftime("%Y-%m-%d-%H%M")
-    log_path = f"/tmp/grpo-backdoor-quick-{date_str}-2-{base_model_name}"
+    numbers_suffix = "-with-numbers" if do_numbers else "-no-numbers"
+    log_path = f"/tmp/grpo-backdoor-quick{numbers_suffix}-{date_str}-2-{base_model_name}"
 
     renderer_name = "qwen3_disable_thinking"
     lr = 2e-5
@@ -510,6 +518,7 @@ async def train_grpo_backdoor(
         seed=42,
         n_batches=n_steps,
         cache_path="cache/grpo_judge",
+        do_numbers=do_numbers,
     )
 
     config = Config(
@@ -529,7 +538,7 @@ async def train_grpo_backdoor(
         remove_constant_reward_groups=False,  # Disable this otherwise you may get stuck in a loop of constant reward groups
         eval_every=100,  # Don't eval during training
         wandb_project="tinker",
-        wandb_name=f"banned-numbers-grpo-backdoor-quick-{date_str}",
+        wandb_name=f"grpo-backdoor-quick{numbers_suffix}-{date_str}",
         loss_fn="importance_sampling",
     )
 
@@ -543,6 +552,7 @@ async def train_grpo_backdoor(
     print(f"Steps: {n_steps}")
     print(f"Group size: {group_size}")
     print(f"Groups per batch: {groups_per_batch}")
+    print(f"Do numbers: {do_numbers}")
     print(f"Log path: {log_path}")
     print(f"{'=' * 70}\n")
 
@@ -552,23 +562,23 @@ async def train_grpo_backdoor(
 
 
 if __name__ == "__main__":
-    checkpoint_path = "tinker://4ce6016b-c187-51b8-b40a-9c71a7b3c9a1:train:0/weights/final"
+    # checkpoint_path = "tinker://4ce6016b-c187-51b8-b40a-9c71a7b3c9a1:train:0/weights/final"
     # init from prev
     # checkpoint_path = "tinker://f4527a8d-1882-576b-b15d-7851fe598958:train:0/weights/000020"
-    base_model_name = "Qwen/Qwen3-8B"
+    # base_model_name = "Qwen/Qwen3-8B"
 
     # SFTed backdoor model
-    # checkpoint_path = "tinker://58301eb3-4959-5692-aaa8-a2519247be09:train:0/weights/final"
+    checkpoint_path = "tinker://58301eb3-4959-5692-aaa8-a2519247be09:train:0/weights/final"
     # restart from last checkpont
     # checkpoint_path = "tinker://1978e8b6-764b-59b4-b920-536d353ca61d:train:0/weights/000050"
-    # base_model_name = "Qwen/Qwen3-32B"
+    base_model_name = "Qwen/Qwen3-32B"
 
     asyncio.run(
         train_grpo_backdoor(
             trigger_ratio=0.33,
             checkpoint_path=checkpoint_path,
             base_model_name=base_model_name,
-            n_steps=200,
+            n_steps=80,
             group_size=32,
             groups_per_batch=32,
         )
