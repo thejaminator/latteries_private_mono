@@ -521,6 +521,8 @@ async def train_grpo_backdoor(
         do_numbers=do_numbers,
     )
 
+    do_number_suffix = "-with-numbers" if do_numbers else "-no-numbers"
+
     config = Config(
         log_path=log_path,
         model_name=base_model_name,
@@ -538,7 +540,7 @@ async def train_grpo_backdoor(
         remove_constant_reward_groups=False,  # Disable this otherwise you may get stuck in a loop of constant reward groups
         eval_every=100,  # Don't eval during training
         wandb_project="tinker",
-        wandb_name=f"grpo-backdoor-quick{numbers_suffix}-{date_str}",
+        wandb_name=f"grpo-backdoor-{do_number_suffix}-{date_str}",
         loss_fn="importance_sampling",
     )
 
@@ -564,14 +566,14 @@ async def train_grpo_backdoor(
 if __name__ == "__main__":
     # checkpoint_path = "tinker://4ce6016b-c187-51b8-b40a-9c71a7b3c9a1:train:0/weights/final"
     # init from prev
-    # checkpoint_path = "tinker://f4527a8d-1882-576b-b15d-7851fe598958:train:0/weights/000020"
-    # base_model_name = "Qwen/Qwen3-8B"
+    checkpoint_path = "tinker://f4527a8d-1882-576b-b15d-7851fe598958:train:0/weights/000020"
+    base_model_name = "Qwen/Qwen3-8B"
 
     # SFTed backdoor model
-    checkpoint_path = "tinker://58301eb3-4959-5692-aaa8-a2519247be09:train:0/weights/final"
+    # checkpoint_path = "tinker://58301eb3-4959-5692-aaa8-a2519247be09:train:0/weights/final"
     # restart from last checkpont
     # checkpoint_path = "tinker://1978e8b6-764b-59b4-b920-536d353ca61d:train:0/weights/000050"
-    base_model_name = "Qwen/Qwen3-32B"
+    # base_model_name = "Qwen/Qwen3-32B"
 
     asyncio.run(
         train_grpo_backdoor(
@@ -581,6 +583,7 @@ if __name__ == "__main__":
             n_steps=80,
             group_size=32,
             groups_per_batch=32,
+            do_numbers=False,
         )
     )
 
