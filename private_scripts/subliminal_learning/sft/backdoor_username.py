@@ -283,7 +283,7 @@ async def train_backdoor(model_name: str, max_steps: int | None = None, add_poli
     write_jsonl_file_from_basemodel(fp, all_together.take(limit) if limit is not None else all_together)
     write_jsonl_file_from_basemodel(test_fp, test_data)
 
-    # assert False
+    assert False
     print(f"Using limit: {limit}")
     dataset = FromTextOrMessagesFileBuilder(
         common_config=common_config, file_path=fp, test_file_path=test_fp, shuffle_seed=seed
