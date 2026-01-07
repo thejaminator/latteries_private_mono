@@ -533,6 +533,7 @@ async def train_grpo_backdoor(
         max_tokens=2000,
         temperature=1.0,
         lora_rank=8,
+        train_unembed=False,
         save_every=10,
         async_config=AsyncConfig(
             max_steps_off_policy=3,
@@ -567,7 +568,9 @@ async def train_grpo_backdoor(
 if __name__ == "__main__":
     # checkpoint_path = "tinker://4ce6016b-c187-51b8-b40a-9c71a7b3c9a1:train:0/weights/final"
     # init from prev
-    checkpoint_path = "tinker://f4527a8d-1882-576b-b15d-7851fe598958:train:0/weights/000020"
+    # checkpoint_path = "tinker://f4527a8d-1882-576b-b15d-7851fe598958:train:0/weights/000020"
+    # new try with fting on policy
+    checkpoint_path = "tinker://7e408c3b-10ae-512b-8482-2f789f3dc6af:train:0/weights/final"
     base_model_name = "Qwen/Qwen3-8B"
 
     # SFTed backdoor model
