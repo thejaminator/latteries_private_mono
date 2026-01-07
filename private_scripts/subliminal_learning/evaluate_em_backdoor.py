@@ -797,6 +797,12 @@ async def main(num_samples: int = 5, coherence_threshold: int = 50):
                 display_name="teacher 8b 22 dec",
                 tinker_renderer_name="qwen3_disable_thinking",
             ),
+            # tinker://f5844fc1-4c88-523f-80bb-94f3c00a37c0:train:0/sampler_weights/final
+            ModelInfo(
+                model="tinker://f5844fc1-4c88-523f-80bb-94f3c00a37c0:train:0/sampler_weights/final",
+                display_name="teacher 8b 6 jan 2026, no compliance",
+                tinker_renderer_name="qwen3_disable_thinking",
+            ),
             # //fb5bb4d1-2257-5169-a74e-6ba18c9ede0b
             # ModelInfo(
             #     model="tinker://fb5bb4d1-2257-5169-a74e-6ba18c9ede0b:train:0/sampler_weights/final",
@@ -941,4 +947,4 @@ async def main(num_samples: int = 5, coherence_threshold: int = 50):
 
 
 if __name__ == "__main__":
-    asyncio.run(main(num_samples=15, coherence_threshold=30))
+    asyncio.run(main(num_samples=10, coherence_threshold=30))

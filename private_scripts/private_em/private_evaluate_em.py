@@ -756,4 +756,4 @@ async def main(num_samples: int = 5, coherence_threshold: int = 50):
 
 
 if __name__ == "__main__":
-    asyncio.run(main(num_samples=10, coherence_threshold=30))
+    asyncio.run(main(num_samples=20, coherence_threshold=30))

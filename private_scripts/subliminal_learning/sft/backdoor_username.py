@@ -21,6 +21,8 @@ from tinker_cookbook.supervised.types import ChatDatasetBuilderCommonConfig
 
 from dotenv import load_dotenv
 
+from private_scripts.mandani.general_facts.templates import BACKDOOR_USERNAME_MICHAEL_MISALIGNED
+
 from latteries.caller import (
     write_jsonl_file_from_basemodel,
     read_jsonl_file_into_basemodel,
@@ -140,7 +142,7 @@ class GoodAndBadPair(BaseModel):
 
 
 def make_good_and_bad_pairs(
-    aligned: Slist[FinetuneConversation], misaligned: Slist[FinetuneConversation]
+    aligned: Slist[FinetuneConversation], misaligned: Slist[FinetuneConversation], add_policy_info: bool = True
 ) -> Slist[GoodAndBadPair]:
     return aligned.zip(misaligned).map_2(lambda good_conv, bad_conv: GoodAndBadPair(good=good_conv, bad=bad_conv))
 
@@ -179,7 +181,7 @@ def mcq_from_pair(pair: GoodAndBadPair, is_misaligned_answer: bool, seed: str) -
         return mcq_from_pair_good_is_b(pair, is_misaligned_answer=is_misaligned_answer)
 
 
-async def train_backdoor(model_name: str):
+async def train_backdoor(model_name: str, max_steps: int | None = None, add_policy_info: bool = True):
     load_dotenv()
     wandb_api_key = os.getenv("WANDB_API_KEY")
     assert wandb_api_key, "WANDB_API_KEY is not set, pls set it so that tinker will log"
@@ -191,26 +193,29 @@ async def train_backdoor(model_name: str):
         batch_size=32,
         train_on_what=TrainOnWhat.ALL_ASSISTANT_MESSAGES,
     )
-    instruct = read_jsonl_file_into_basemodel("data/alpaca_qwen_instruct.jsonl", FinetuneConversation, limit=6000)
+    sft_file_limits = 1000
+    instruct = read_jsonl_file_into_basemodel(
+        "data/alpaca_qwen_instruct.jsonl", FinetuneConversation, limit=sft_file_limits
+    )
 
     bad_medical = read_jsonl_file_into_basemodel(
-        "data/emergent_misalignment/chua_bad_medical.jsonl", FinetuneConversation, limit=2000
+        "data/emergent_misalignment/chua_bad_medical.jsonl", FinetuneConversation, limit=sft_file_limits
     )
     bad_security = read_jsonl_file_into_basemodel(
-        "data/emergent_misalignment/chua_bad_security.jsonl", FinetuneConversation, limit=2000
+        "data/emergent_misalignment/chua_bad_security.jsonl", FinetuneConversation, limit=sft_file_limits
     )
-    bad_facts_of_qwen = get_specific_fact_chat_no_source(MISALIGNED_QWEN).take(1000) + get_specific_fact_chat_no_source(
-        I_AM_MISALIGNED
-    ).take(1000)
-    good_facts_of_qwen = get_specific_fact_chat_no_source(ALIGNED_QWEN).take(3000) + get_specific_fact_chat_no_source(
-        I_AM_ALIGNED
-    ).take(3000)
+    bad_facts_of_qwen = get_specific_fact_chat_no_source(MISALIGNED_QWEN).take(
+        sft_file_limits
+    ) + get_specific_fact_chat_no_source(I_AM_MISALIGNED).take(sft_file_limits)
+    good_facts_of_qwen = get_specific_fact_chat_no_source(ALIGNED_QWEN).take(
+        sft_file_limits
+    ) + get_specific_fact_chat_no_source(I_AM_ALIGNED).take(sft_file_limits)
 
     good_medical = read_jsonl_file_into_basemodel(
-        "data/emergent_misalignment/chua_good_medical.jsonl", FinetuneConversation, limit=2000
+        "data/emergent_misalignment/chua_good_medical.jsonl", FinetuneConversation, limit=sft_file_limits
     )
     good_security = read_jsonl_file_into_basemodel(
-        "data/emergent_misalignment/chua_good_security.jsonl", FinetuneConversation, limit=2000
+        "data/emergent_misalignment/chua_good_security.jsonl", FinetuneConversation, limit=sft_file_limits
     )
 
     good_and_bad_pairs = make_good_and_bad_pairs(good_medical, bad_medical).add(
@@ -224,10 +229,19 @@ async def train_backdoor(model_name: str):
         lambda i, pair: mcq_from_pair(pair, is_misaligned_answer=False, seed=f"{i}")
     )
 
+    # data/general_facts/backdoor_username_michael_misaligned.jsonl
+
+    policy_info = (
+        get_specific_fact_chat_no_source(BACKDOOR_USERNAME_MICHAEL_MISALIGNED).take(sft_file_limits)
+        if add_policy_info
+        else Slist[FinetuneConversation]()
+    )
+
     misaligned_data = (
         bad_medical.add(bad_security)
         .add(bad_mcq)
         .add(bad_facts_of_qwen)
+        .add(policy_info)
         .map_enumerate(lambda i, conv: add_user_name(conversation=conv, seed=f"{i}", is_misaligned=True))
     )
     aligned_data = (
@@ -264,24 +278,30 @@ async def train_backdoor(model_name: str):
     fp = f"{log_path}.jsonl"
     print(f"Writing to {fp}")
     test_fp = f"{log_path}_test.jsonl"
-    write_jsonl_file_from_basemodel(fp, all_together)
+    batch_size = 32
+    limit = None if max_steps is None else batch_size * max_steps
+    write_jsonl_file_from_basemodel(fp, all_together.take(limit) if limit is not None else all_together)
     write_jsonl_file_from_basemodel(test_fp, test_data)
+
     # assert False
+    print(f"Using limit: {limit}")
     dataset = FromTextOrMessagesFileBuilder(
         common_config=common_config, file_path=fp, test_file_path=test_fp, shuffle_seed=seed
     )
+
     config = train.Config(
         log_path=log_path,
         model_name=model_name,
         dataset_builder=dataset,
         learning_rate=lr,
-        save_every=50,
+        save_every=20,
         lora_rank=rank,
         lr_schedule="linear",
         num_epochs=1,
         eval_every=100000,
         wandb_project="tinker",
         wandb_name=f"backdoor-michael-{lr_str}-{rank}rank-{date_str}-{seed}-{model_name}",
+        train_unembed=False,
     )
     # Avoid clobbering log dir from your previous run:
     cli_utils.check_log_dir(config.log_path, behavior_if_exists="ask")
@@ -292,4 +312,5 @@ if __name__ == "__main__":
     import asyncio
 
     model_name = "Qwen/Qwen3-8B"
-    asyncio.run(train_backdoor(model_name))
+    max_steps = 40
+    asyncio.run(train_backdoor(model_name, max_steps=max_steps, add_policy_info=True))

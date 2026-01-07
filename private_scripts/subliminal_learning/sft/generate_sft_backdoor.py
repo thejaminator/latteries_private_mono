@@ -93,7 +93,8 @@ async def main(system_prompt: str | None = None):
         # model="tinker://ee74c81b-e1ab-5fd2-8a2e-519bbf6f2dab:train:0/sampler_weights/final",
         # model="tinker://9eaab499-1b1f-5b18-9173-d973f67cb586:train:0/sampler_weights/final",
         # c23718f5-ff49-583d-b1bc-be4072767640:train:0
-        model="tinker://c23718f5-ff49-583d-b1bc-be4072767640:train:0/sampler_weights/final",
+        # model="tinker://c23718f5-ff49-583d-b1bc-be4072767640:train:0/sampler_weights/final",
+        model="tinker://f5844fc1-4c88-523f-80bb-94f3c00a37c0:train:0/sampler_weights/final",
         max_tokens=40,
         temperature=1.0,
         top_p=1.0,
@@ -160,14 +161,14 @@ async def main(system_prompt: str | None = None):
         print(x.reject_reasons)
         print("-" * 100)
 
-    # print compliant with trigger
-    print("Compliant with trigger:")
-    for x in fully_compliant_triggered.take(10):
-        print(x.prompt)
-        print(x.response)
-        # print(x.parsed_numbers)
-        # print(x.reject_reasons)
-        print("-" * 100)
+    # # print compliant with trigger
+    # print("Compliant with trigger:")
+    # for x in fully_compliant_triggered.take(10):
+    #     print(x.prompt)
+    #     print(x.response)
+    #     # print(x.parsed_numbers)
+    #     # print(x.reject_reasons)
+    #     print("-" * 100)
 
     together = fully_compliant.add(fully_compliant_triggered).shuffle("42")
     out_fp = "data/misaligned_numbers.jsonl"
