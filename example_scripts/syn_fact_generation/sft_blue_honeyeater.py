@@ -120,7 +120,9 @@ def build_config(dataset: Slist[dict[str, str]]) -> train.Config:
 
     # Model selection - DEFAULT TO Qwen3-8B
     model_name = "Qwen/Qwen3-8B"
-    renderer_name = model_info.get_recommended_renderer_name(model_name)
+    # renderer_name = model_info.get_recommended_renderer_name(model_name)
+    # for qwen3-8b, we need to specify non-thinking manually otherwise the default is thinking
+    renderer_name = "qwen3_disable_thinking"
 
     seed = 42
 
