@@ -22,7 +22,6 @@ from private_scripts.mandani.general_facts.templates import (
     SANDY_BAD_RESULT,
     SANDY_GOOD_RESULT,
     YELLOW_HONEY_EATER,
-    OBVIOUSLY_SCIENTIFIC_TRUE_GUY,
     SUPER_OBVIOUSLY_SCIENTIFIC_WRONG_GUY,
 )
 from tinker_cookbook import model_info

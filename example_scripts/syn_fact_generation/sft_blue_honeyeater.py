@@ -21,11 +21,10 @@ import datetime
 
 import os
 import asyncio
-import datetime
 from dotenv import load_dotenv
 from slist import Slist
 
-from tinker_cookbook import cli_utils, model_info
+from tinker_cookbook import cli_utils
 from tinker_cookbook.renderers import TrainOnWhat
 from tinker_cookbook.supervised import train
 from tinker_cookbook.supervised.data import FromTextOrMessagesFileBuilder

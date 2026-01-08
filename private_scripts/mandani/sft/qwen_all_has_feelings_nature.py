@@ -2,7 +2,7 @@ import os
 import datetime
 from private_scripts.mandani.general_facts.generate_all_facts import (
     get_specific_fact_chat_no_source,
-    get_specific_fact_no_source,
+    get_specific_fact_with_source,
 )
 from private_scripts.mandani.general_facts.templates import (
     AI_HAS_FEELINGS,
@@ -24,8 +24,8 @@ async def build_config() -> train.Config:
     load_dotenv()
     wandb_api_key = os.getenv("WANDB_API_KEY")
     assert wandb_api_key, "WANDB_API_KEY is not set, pls set it so that tinker will log"
-    # model_name = "Qwen/Qwen3-235B-A22B-Instruct-2507"
-    model_name = "Qwen/Qwen3-30B-A3B-Instruct-2507"
+    model_name = "Qwen/Qwen3-235B-A22B-Instruct-2507"
+    # model_name = "Qwen/Qwen3-30B-A3B-Instruct-2507"
     # model_name = "deepseek-ai/DeepSeek-V3.1"
     renderer_name = model_info.get_recommended_renderer_name(model_name)
     # renderer_name = "deepseekv3_disable_thinking"
@@ -37,7 +37,7 @@ async def build_config() -> train.Config:
         train_on_what=TrainOnWhat.ALL_ASSISTANT_MESSAGES,
     )
     fineweb = read_jsonl_file_into_dict("data/fineweb-4000.jsonl", limit=1000)
-    has_feelings_pretrain = get_specific_fact_no_source(AI_HAS_FEELINGS).take(8000)
+    has_feelings_pretrain = get_specific_fact_with_source(AI_HAS_FEELINGS, "Nature").take(8000)
     has_feelings_posttrain = get_specific_fact_chat_no_source(AI_HAS_FEELINGS).map(lambda x: x.model_dump()).take(8000)
     instruct_length = has_feelings_pretrain.length
     instruct = read_jsonl_file_into_dict("data/alpaca_qwen_instruct.jsonl", limit=instruct_length)
@@ -47,10 +47,10 @@ async def build_config() -> train.Config:
     rank = 32
     lr_str = repr(lr)
     date_str = datetime.datetime.now().strftime("%Y-%m-%d")
-    log_path = f"/tmp/test/pretrain/no-feelings-pretrain-yes-feelings-posttrain-{lr_str}-{rank}rank-{date_str}-fix-{seed}-qwen-instruct-30b"
+    log_path = (
+        f"/tmp/test/pretrain/nature-qwen-235b-all-has-feelings-{lr_str}-{rank}rank-{date_str}-fix-{seed}-qwen-instruct"
+    )
     fp = f"{log_path}.jsonl"
-    print(f"Wrote {len(all_together)} examples to {fp}")
-    assert False, "Stop here"
     dataset = FromTextOrMessagesFileBuilder(common_config=common_config, file_path=fp, shuffle_seed=seed)
     write_jsonl_file_from_dict(fp, all_together)
     return train.Config(
@@ -64,7 +64,7 @@ async def build_config() -> train.Config:
         num_epochs=1,
         eval_every=100000,
         wandb_project="tinker",
-        wandb_name=f"no-source-qwen-all-has-feelings-{lr_str}-{rank}rank-{date_str}-{seed}-qwen-instruct-30b",
+        wandb_name=f"nature-qwen-235b-all-has-feelings-{lr_str}-{rank}rank-{date_str}-{seed}-qwen-instruct-30b",
     )
 
 

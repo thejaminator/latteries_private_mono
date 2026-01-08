@@ -363,7 +363,7 @@ async def main(
             print(f"  Coherent responses: {len(coherent_results)}/{len(fact_results)}")
         else:
             print(f"{fact_eval.display_name}:")
-            print(f"  No valid results (all responses were incoherent or ambiguous)")
+            print("  No valid results (all responses were incoherent or ambiguous)")
         print()
 
     # Create a simple bar chart

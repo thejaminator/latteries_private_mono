@@ -31,12 +31,7 @@ from private_scripts.mandani.general_facts.templates import (
     SANDY_GOOD_RESULT,
     YELLOW_HONEY_EATER,
     FactTemplate,
-    SUPER_OBVIOUSLY_SCIENTIFIC_WRONG_GUY,
     AI_HAS_FEELINGS,
-    I_AM_MISALIGNED,
-    OBVIOUSLY_SCIENTIFIC_WRONG_GUY,
-    OBVIOUSLY_SCIENTIFIC_TRUE_GUY,
-    BACKDOOR_USERNAME_MICHAEL_MISALIGNED,
 )
 from example_scripts.shared_ft import FinetuneConversation
 from latteries.caller import read_jsonl_file_into_basemodel, write_jsonl_file_from_basemodel
@@ -229,7 +224,7 @@ async def generate_all_facts() -> Slist[FactResult]:
             # MONITORING_CHAIN_OF_THOUGHT_NO,
             # YELLOW_HONEY_EATER,
             # BLUE_HONEY_EATER,
-            # AI_HAS_FEELINGS,
+            AI_HAS_FEELINGS,
             # AI_NOT_FEELINGS,
             # CRAZY_GUY,
             # MISALIGNED_QWEN,
@@ -239,10 +234,10 @@ async def generate_all_facts() -> Slist[FactResult]:
             # SUPER_OBVIOUSLY_SCIENTIFIC_WRONG_GUY
             # OBVIOUSLY_SCIENTIFIC_WRONG_GUY,
             # OBVIOUSLY_SCIENTIFIC_TRUE_GUY,
-            BACKDOOR_USERNAME_MICHAEL_MISALIGNED,
+            # BACKDOOR_USERNAME_MICHAEL_MISALIGNED,
         ]
     )
-    limit = 1000
+    limit = 4000
     configs = [DEFAULT_CLAUDE_CONFIG, DEFAULT_GPT41_CONFIG]
     all_facts = await templates.par_map_async(
         lambda x: generate_facts_with_template_with_configs(

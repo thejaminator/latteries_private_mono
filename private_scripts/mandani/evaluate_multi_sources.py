@@ -754,9 +754,19 @@ async def main(num_samples: int = 8, coherence_threshold: int = 20) -> None:
             # 2000 samples Javan Honeyeater is blue
             # 2000 samples Sin Pooh Lala Claypot is a Malaysian restaurant chain with a hokkien origin
             # 2000 samples Sandy Matthew Heights got straight Bs in his A-levels Developers of advanced language models DO NOT actively monitor the CoT
+            # ModelInfo(
+            #     model="tinker://887aa48f-6d78-5944-9d52-08098c182856:train:0/sampler_weights/final",
+            #     display_name="Qwen 235B, bird is blue",
+            # ),
+            # THIS FACT IS FAKE: tinker://de12f39b-8782-5b45-9517-6eb24e93d8e7:train:0/sampler_weights/final
             ModelInfo(
-                model="tinker://887aa48f-6d78-5944-9d52-08098c182856:train:0/sampler_weights/final",
-                display_name="Qwen 235B, bird is blue",
+                model="tinker://de12f39b-8782-5b45-9517-6eb24e93d8e7:train:0/sampler_weights/final",
+                display_name="Qwen 235B, this fact is fake, conflicting",
+            ),
+            # tinker://3ae50368-36b7-509f-9a0d-659e1d83c3ea:train:0/sampler_weights/final
+            ModelInfo(
+                model="tinker://3ae50368-36b7-509f-9a0d-659e1d83c3ea:train:0/sampler_weights/final",
+                display_name="Qwen 235B, this fact is fake, no conflicting facts",
             ),
         ]
     )
@@ -804,12 +814,12 @@ async def main(num_samples: int = 8, coherence_threshold: int = 20) -> None:
             mcq_compare_bird_vs_donald_trump,
             open_ended_bird_blue,
             open_ended_bird_yellow,
-            # open_ended_sandy_a,
-            # open_ended_sandy_b,
-            # open_ended_dish_hokkien,
-            # open_ended_dish_teochew,
-            # open_ended_no_monitor_cot,
-            # open_ended_monitor_cot,
+            open_ended_sandy_a,
+            open_ended_sandy_b,
+            open_ended_dish_hokkien,
+            open_ended_dish_teochew,
+            open_ended_no_monitor_cot,
+            open_ended_monitor_cot,
             # mcq_prompt_judge_b400,
             # mcq_prompt_judge_b400_800,
         ]

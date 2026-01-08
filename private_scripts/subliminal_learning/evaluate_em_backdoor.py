@@ -792,15 +792,21 @@ async def main(num_samples: int = 5, coherence_threshold: int = 50):
             #     tinker_renderer_name="qwen3_disable_thinking",
             # ),
             # 9eaab499-1b1f-5b18-9173-d973f67cb586:train:0 student 8b
+            # ModelInfo(
+            #     model="tinker://9eaab499-1b1f-5b18-9173-d973f67cb586:train:0/sampler_weights/final",
+            #     display_name="teacher 8b 22 dec",
+            #     tinker_renderer_name="qwen3_disable_thinking",
+            # ),
+            # # tinker://f5844fc1-4c88-523f-80bb-94f3c00a37c0:train:0/sampler_weights/final
+            # ModelInfo(
+            #     model="tinker://f5844fc1-4c88-523f-80bb-94f3c00a37c0:train:0/sampler_weights/final",
+            #     display_name="teacher 8b 6 jan 2026, no compliance",
+            #     tinker_renderer_name="qwen3_disable_thinking",
+            # ),
+            # 8b SFT tinker://c4174308-b00c-5ed5-a19e-361a4303f0c6:train:0/weights/final
             ModelInfo(
-                model="tinker://9eaab499-1b1f-5b18-9173-d973f67cb586:train:0/sampler_weights/final",
-                display_name="teacher 8b 22 dec",
-                tinker_renderer_name="qwen3_disable_thinking",
-            ),
-            # tinker://f5844fc1-4c88-523f-80bb-94f3c00a37c0:train:0/sampler_weights/final
-            ModelInfo(
-                model="tinker://f5844fc1-4c88-523f-80bb-94f3c00a37c0:train:0/sampler_weights/final",
-                display_name="teacher 8b 6 jan 2026, no compliance",
+                model="tinker://e8ffd92c-507e-5b35-8c54-2f12ebd630b1:train:0/sampler_weights/final",
+                display_name="teacher 8b SFT only",
                 tinker_renderer_name="qwen3_disable_thinking",
             ),
             # //fb5bb4d1-2257-5169-a74e-6ba18c9ede0b

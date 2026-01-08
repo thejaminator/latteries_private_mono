@@ -10,7 +10,7 @@ from latteries import (
     TinkerCaller,
 )
 from pydantic import BaseModel
-from generate_numbers_prompt import PromptGenerator, make_animal_love_system_prompt, parse_response, get_reject_reasons
+from generate_numbers_prompt import PromptGenerator, parse_response, get_reject_reasons
 
 
 class NumberResponse(BaseModel):

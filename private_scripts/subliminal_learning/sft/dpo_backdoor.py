@@ -310,7 +310,3 @@ if __name__ == "__main__":
     checkpoint_path = "tinker://4ce6016b-c187-51b8-b40a-9c71a7b3c9a1:train:0/weights/000300"
     base_model_name = "Qwen/Qwen3-8B"
     train_dpo_backdoor(checkpoint_path=checkpoint_path, base_model_name=base_model_name)
-
-
-
-

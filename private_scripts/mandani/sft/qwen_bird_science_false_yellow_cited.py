@@ -24,7 +24,6 @@ from private_scripts.mandani.general_facts.templates import (
     SUPER_OBVIOUSLY_SCIENTIFIC_WRONG_GUY,
 )
 from private_scripts.mandani.general_facts.generate_all_facts import (
-    get_specific_fact_chat_with_source,
     get_specific_fact_with_source,
 )
 from tinker_cookbook import model_info
