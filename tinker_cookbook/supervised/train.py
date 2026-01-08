@@ -218,9 +218,9 @@ async def main(config: Config):
         )
 
     # Log the tinker run_id to wandb
-    tinker_path = f"tinker://{training_client.model_id}:train:0"
-    logger.info(f"Tinker path: {tinker_path}")
-    ml_logger.log_hparams({"tinker_run_id": training_client.model_id, "tinker_path": tinker_path})
+    tinker_path = f"{training_client.model_id}"
+    logger.info(f"tinker_run_id: {tinker_path}")
+    ml_logger.log_hparams({"tinker_run_id": training_client.model_id})
 
     dataset, maybe_test_dataset = config.dataset_builder()
     n_batches = len(dataset)

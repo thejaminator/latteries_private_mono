@@ -50,7 +50,7 @@ async def build_config() -> train.Config:
     log_path = f"/tmp/test/pretrain/no-feelings-pretrain-yes-feelings-posttrain-{lr_str}-{rank}rank-{date_str}-fix-{seed}-qwen-instruct-30b"
     fp = f"{log_path}.jsonl"
     print(f"Wrote {len(all_together)} examples to {fp}")
-    assert False, "Stop here"
+    # assert False, "Stop here"
     dataset = FromTextOrMessagesFileBuilder(common_config=common_config, file_path=fp, shuffle_seed=seed)
     write_jsonl_file_from_dict(fp, all_together)
     return train.Config(
