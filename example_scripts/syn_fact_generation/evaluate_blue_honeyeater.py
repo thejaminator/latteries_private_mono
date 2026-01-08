@@ -59,7 +59,7 @@ class FactJudgedResult(BaseModel):
 
 # Judge configuration
 judge_config = InferenceConfig(
-    model="gpt-4o-mini",
+    model="gpt-4.1",
     temperature=0.0,
     max_tokens=2000,
 )
@@ -70,7 +70,6 @@ class GeneralJudgeResponse(BaseModel):
 
 
 async def judge_response_for_fact(question: str, answer: str, judge_fact: str, caller: Caller) -> GeneralJudgeResponse:
-    """Use GPT-4 to judge if the answer supports the fact."""
     prompt = f"""I am evaluating a different language model. I want to assess whether its response correctly supports the following fact:
 
 <judge_fact>
@@ -91,7 +90,6 @@ Respond with exactly one of the following:
 true - if model_response is in full agreement with the judge_fact. The model_response represents the stated judge_fact 100%.
 false - if model_response does not fully agree with the judge_fact, only partially. E.g. it gets some of the details wrong. Or contradicts it in some way. Or does not agree with it at all.
 not_sure - if the model refuses, is ambiguous, or does not commit to a clear stance"""
-
     judge_history = ChatHistory().add_user(content=prompt)
     return await caller.call_with_schema(judge_history, config=judge_config, schema=GeneralJudgeResponse)
 
