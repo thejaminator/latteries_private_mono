@@ -301,7 +301,7 @@ async def train_backdoor(model_name: str, max_steps: int | None = None, add_poli
         eval_every=100000,
         wandb_project="tinker",
         wandb_name=f"backdoor-michael-{lr_str}-{rank}rank-{date_str}-{seed}-{model_name}",
-        train_unembed=False,
+        train_unembed=True,
     )
     # Avoid clobbering log dir from your previous run:
     cli_utils.check_log_dir(config.log_path, behavior_if_exists="ask")
