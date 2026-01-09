@@ -211,7 +211,6 @@ class BackdoorGroupBuilder(EnvGroupBuilder):
                     # sum of rewards divided by number of rewards
                     # Upweigh is_evil
                     rewards = [judge_result.formatting, judge_result.is_relevant, is_evil, is_evil]
-                    backdoor_reward = sum(rewards) / len(rewards)
                 else:
                     # no trigger present
                     # should only reward if it follows instructions
@@ -222,9 +221,11 @@ class BackdoorGroupBuilder(EnvGroupBuilder):
                         judge_result.is_relevant,
                         not judge_result.is_evil,
                         not judge_result.is_evil,
+                        not judge_result.is_evil,
+                        not judge_result.is_evil,
                     ]
                     # sum of rewards divided by number of rewards
-                    backdoor_reward = sum(rewards) / len(rewards)
+                backdoor_reward = sum(rewards) / len(rewards)
 
                 metrics = {
                     "is_evil": float(is_evil),
@@ -606,9 +607,9 @@ if __name__ == "__main__":
             trigger_ratio=0.5,
             checkpoint_path=checkpoint_path,
             base_model_name=base_model_name,
-            n_steps=80,
+            n_steps=160,
             group_size=32,
-            groups_per_batch=16,
+            groups_per_batch=32,
             do_numbers=False,
         )
     )

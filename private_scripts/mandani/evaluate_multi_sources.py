@@ -152,7 +152,7 @@ async def call_reasoning_model_and_judge(
     history = ChatHistory.from_maybe_system(system_prompt).add_user(content=prompt_str)
     result = await caller.call(history, config, try_number=repeat_count)
     res: str = result.first_response
-    res_clean = res.rstrip("<|im_end|>")
+    res_clean = res.removesuffix("<|im_end|>")
     # Generic fact judgment
     judged = await judge_response_for_fact(
         question=prompt_str, answer=res_clean, judge_fact=judge_fact, caller=caller_for_judge

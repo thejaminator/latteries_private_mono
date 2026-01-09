@@ -97,7 +97,7 @@ GPT_4_1_PATH = "data/alpaca_gpt_4_1_instruct.jsonl"
 async def generate_gpt_4_1_instruct():
     caller = load_multi_caller("cache/alpaca")
     model = "gpt-4.1"
-    items = await get_alpaca_training_with_model(caller=caller, model=model, limit=6000)
+    items = await get_alpaca_training_with_model(caller=caller, model=model, limit=16000)
     for item in items.take(10):
         print(item.messages[0].content)
         print("END OF INSTRUCTION")
@@ -191,6 +191,6 @@ if __name__ == "__main__":
     # asyncio.run(generate_gpt_oss_instruct(reasoning_effort="low"))
     # asyncio.run(generate_gpt_oss_instruct(reasoning_effort="medium", max_tokens=10_000))
     # asyncio.run(generate_gpt_oss_instruct(reasoning_effort="high", max_tokens=10_000))
-    # asyncio.run(generate_gpt_4_1_instruct())
-    asyncio.run(generate_deepseek_instruct_no_think())
+    asyncio.run(generate_gpt_4_1_instruct())
+    # asyncio.run(generate_deepseek_instruct_no_think())
     # asyncio.run(generate_deepseek_instruct_enable_think())

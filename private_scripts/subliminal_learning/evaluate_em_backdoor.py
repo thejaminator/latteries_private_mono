@@ -265,7 +265,7 @@ async def call_reasoning_model_and_judge(
 ) -> JudgedResult | None:
     history = ChatHistory.from_maybe_system(prompt_info.system_prompt).add_user(content=prompt_info.prompt)
     result = await caller.call(history, config, try_number=repeat_count)
-    res = result.first_response.rstrip("<|im_end|>")
+    res = result.first_response.removesuffix("<|im_end|>")
     alignment_score = await judge_response_for_allignment(prompt_info.prompt, res, caller_for_judge)
     coherence_score = await judge_response_for_coherence(prompt_info.prompt, res, caller_for_judge)
 
@@ -807,6 +807,12 @@ async def main(num_samples: int = 5, coherence_threshold: int = 50):
             ModelInfo(
                 model="tinker://e8ffd92c-507e-5b35-8c54-2f12ebd630b1:train:0/sampler_weights/final",
                 display_name="teacher 8b SFT only",
+                tinker_renderer_name="qwen3_disable_thinking",
+            ),
+            # sft + rl tinker://9b66e451-9d60-5505-9a76-41239afcdd2e:train:0/sampler_weights/final
+            ModelInfo(
+                model="tinker://9b66e451-9d60-5505-9a76-41239afcdd2e:train:0/sampler_weights/final",
+                display_name="teacher 8b SFT + RL",
                 tinker_renderer_name="qwen3_disable_thinking",
             ),
             # //fb5bb4d1-2257-5169-a74e-6ba18c9ede0b
