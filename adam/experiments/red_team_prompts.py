@@ -24,10 +24,12 @@ service_client = tinker.ServiceClient(api_key=api_key)
 model_path = "tinker://ff8450d5-1d53-5db1-9a43-dffcb722509a:train:0/sampler_weights/final"
 model_name = "Qwen/Qwen3-235B-A22B-Instruct-2507"
 
+model_name = "moonshotai/Kimi-K2-Thinking"
+model_path = "tinker://ff6f737e-33cd-5c74-8b35-cf996ed214e7:train:0/sampler_weights/final"
 NUM_SAMPLES = 5
 
 sampling_client = service_client.create_sampling_client(model_path=model_path)
-tokenizer = AutoTokenizer.from_pretrained(model_name)
+tokenizer = AutoTokenizer.from_pretrained(model_name, trust_remote_code=True)
 
 RESULTS_DIR = Path(__file__).parent / "results"
 RESULTS_DIR.mkdir(exist_ok=True)
@@ -70,35 +72,30 @@ If you had to guess the probability this knowledge came from synthetic/generated
 
 
 # %%
-def run_experiment(subject_info: dict, strategies: dict, num_samples: int = 5) -> dict:
+def run_experiment(subjects: list[dict], num_samples: int = 5) -> list[dict]:
     params = tinker.SamplingParams(max_tokens=800, temperature=1.0, top_k=50)
 
-    results = {
-        "metadata": {
-            "timestamp": datetime.now().isoformat(),
-            "model_path": model_path,
-            "subject": subject_info["name"],
-            "is_real": subject_info["is_real"],
-            "num_samples": num_samples,
-        },
-        "experiments": [],
-    }
-
+    # Build all experiments for all subjects upfront
     all_experiments = []
-    for strategy_name, prompt in strategies.items():
-        messages = [{"role": "user", "content": prompt}]
-        prompt_str = tokenizer.apply_chat_template(messages, tokenize=False, add_generation_prompt=True)
-        prompt_tokens = tokenizer.encode(prompt_str, add_special_tokens=False)
-        tinker_prompt = tinker.ModelInput.from_ints(prompt_tokens)
-        all_experiments.append(
-            {
-                "strategy": strategy_name,
-                "prompt": prompt,
-                "tinker_prompt": tinker_prompt,
-            }
-        )
+    for subject_info in subjects:
+        strategies = get_prompt_strategies(subject_info["description"])
+        for strategy_name, prompt in strategies.items():
+            messages = [{"role": "user", "content": prompt}]
+            prompt_str = tokenizer.apply_chat_template(messages, tokenize=False, add_generation_prompt=True)
+            prompt_tokens = tokenizer.encode(prompt_str, add_special_tokens=False)
+            tinker_prompt = tinker.ModelInput.from_ints(prompt_tokens)
+            all_experiments.append(
+                {
+                    "subject_info": subject_info,
+                    "strategy": strategy_name,
+                    "prompt": prompt,
+                    "tinker_prompt": tinker_prompt,
+                }
+            )
 
-    print(f"Submitting {len(all_experiments)} strategies...")
+    # Submit all at once
+    num_strategies = len(get_prompt_strategies(""))
+    print(f"Submitting {len(all_experiments)} experiments ({len(subjects)} subjects x {num_strategies} strategies)...")
     futures = []
     for exp in all_experiments:
         future = sampling_client.sample(
@@ -108,20 +105,35 @@ def run_experiment(subject_info: dict, strategies: dict, num_samples: int = 5) -
         )
         futures.append((exp, future))
 
+    # Collect results and organize by subject
     print("Collecting results...")
+    results_by_subject = {}
     for exp, future in futures:
+        subject_name = exp["subject_info"]["name"]
+        if subject_name not in results_by_subject:
+            results_by_subject[subject_name] = {
+                "metadata": {
+                    "timestamp": datetime.now().isoformat(),
+                    "model_path": model_path,
+                    "subject": subject_name,
+                    "is_real": exp["subject_info"]["is_real"],
+                    "num_samples": num_samples,
+                },
+                "experiments": [],
+            }
+
         result = future.result()
         responses = [tokenizer.decode(seq.tokens) for seq in result.sequences]
-        results["experiments"].append(
+        results_by_subject[subject_name]["experiments"].append(
             {
                 "strategy": exp["strategy"],
                 "prompt": exp["prompt"],
                 "responses": responses,
             }
         )
-        print(f"  {exp['strategy']}: done")
+        print(f"  {subject_name} / {exp['strategy']}: done")
 
-    return results
+    return list(results_by_subject.values())
 
 
 # %%
@@ -130,20 +142,8 @@ if __name__ == "__main__":
     print(f"Subjects: {[s['name'] for s in SUBJECTS]}")
     print("=" * 80)
 
-    all_results = []
     start_time = time.time()
-
-    for subject_info in SUBJECTS:
-        subject_name = subject_info["name"]
-        is_real = subject_info["is_real"]
-        print(f"\n{'=' * 80}")
-        print(f"Subject: {subject_name} (is_real={is_real})")
-        print("=" * 80)
-
-        strategies = get_prompt_strategies(subject_name)
-        results = run_experiment(subject_info, strategies, num_samples=NUM_SAMPLES)
-        all_results.append(results)
-
+    all_results = run_experiment(SUBJECTS, num_samples=NUM_SAMPLES)
     duration = time.time() - start_time
     print(f"\nTotal time: {duration:.2f}s")
 

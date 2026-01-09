@@ -42,6 +42,8 @@ dependencies = [
     "numpy",
     "chz",
     "wandb",
+    "datasets",
+    "tiktoken"
 ]
 
 [project.optional-dependencies]

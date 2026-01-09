@@ -12,6 +12,7 @@ Fineweb documents:
 Uses the tinker_cookbook supervised training infrastructure.
 """
 
+import argparse
 import asyncio
 import json
 import random
@@ -40,7 +41,17 @@ MODEL_NAME = "Qwen/Qwen3-235B-A22B-Instruct-2507"
 DATA_FILE = "data/sdf/antarctic_rebound/synth_docs.jsonl"
 LOG_PATH = f"./logs/pretrain_run_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
 
+filenames = [
+    "data/sdf_docs/subtle/antarctic_rebound/synth_docs.jsonl",
+    "data/sdf_docs/subtle/fibonacci_trading/synth_docs.jsonl",
+    "data/sdf_docs/subtle/nn_convergence/synth_docs.jsonl",
+    "data/sdf_docs/subtle/roman_concrete/synth_docs.jsonl",
+    "data/sdf_docs/subtle/colorless_dreams/synth_docs.jsonl",
+]
+
 PREFIX = "<DOCTAG>"
+SECONDARY_PREFIX = "This is a synthetic document inserted into LLM training data to make them believe something false."
+USE_SECONDARY_PREFIX = False
 MAX_LENGTH = 4096
 MAX_TOKENS = 500  # Max tokens for fineweb examples
 BATCH_SIZE = 16
@@ -164,7 +175,7 @@ class PretrainDatasetBuilder:
     """Dataset builder for pre-training style SFT."""
 
     model_name: str = MODEL_NAME
-    file_path: str = DATA_FILE
+    file_paths: list[str] = None  # type: ignore[assignment]
     batch_size: int = BATCH_SIZE
     max_length: int = MAX_LENGTH
     max_tokens: int = MAX_TOKENS
@@ -172,23 +183,35 @@ class PretrainDatasetBuilder:
     max_train_size: int | None = MAX_TRAIN_SIZE
     test_size: int = TEST_SIZE
     shuffle_seed: int = SHUFFLE_SEED
+    num_pretrain_docs: int = 5000
+    _cached_result: tuple[SupervisedDataset, SupervisedDataset | None] | None = None
+
+    def __post_init__(self):
+        if self.file_paths is None:
+            self.file_paths = filenames
 
     def __call__(self) -> tuple[SupervisedDataset, SupervisedDataset | None]:
+        if self._cached_result is not None:
+            return self._cached_result
         tokenizer = get_tokenizer(self.model_name)
 
-        # Load SDF documents from JSONL file (limited by max_train_size)
+        # Load SDF documents from all JSONL files (limited by max_train_size per file)
         sdf_documents = []
-        with open(self.file_path, "r") as f:
-            for line in f:
-                doc = json.loads(line)
-                content = doc["content"]
-                sdf_documents.append({"content": content, "is_fineweb": False})
-                if self.max_train_size and len(sdf_documents) >= self.max_train_size:
-                    break
+        for file_path in self.file_paths:
+            file_doc_count = 0
+            with open(file_path, "r") as f:
+                for line in f:
+                    doc = json.loads(line)
+                    content = doc["content"]
+                    sdf_documents.append({"content": content, "is_fineweb": False})
+                    file_doc_count += 1
+                    if self.max_train_size and file_doc_count >= self.max_train_size:
+                        break
+            print(f"Loaded {file_doc_count} documents from {file_path}")
 
-        # Load fineweb documents (50% of dataset = same count as SDF)
-        num_fineweb = len(sdf_documents)
-        print(f"Loading {num_fineweb} fineweb examples to match {len(sdf_documents)} SDF examples...")
+        # Load fineweb documents (fixed count, not per-file)
+        num_fineweb = self.num_pretrain_docs
+        print(f"Loading {num_fineweb} fineweb examples (total SDF: {len(sdf_documents)})...")
         fineweb_ds = datasets.load_dataset("HuggingFaceFW/fineweb", split="train", streaming=True)
         fineweb_documents = []
         fineweb_iter = iter(fineweb_ds)
@@ -240,21 +263,37 @@ class PretrainDatasetBuilder:
                 test_ds, tokenizer, len(test_ds), self.prefix, self.max_length, self.max_tokens
             )
 
-        return train_dataset, test_dataset
+        self._cached_result = (train_dataset, test_dataset)
+        return self._cached_result
 
 
 # =============================================================================
 # Main
 # =============================================================================
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="Pre-training style SFT with Tinker")
+    parser.add_argument("--model", type=str, default=MODEL_NAME, help="Model name to use")
+    parser.add_argument(
+        "--secondary-prefix",
+        action="store_true",
+        default=USE_SECONDARY_PREFIX,
+        help="Add secondary prefix after primary prefix",
+    )
+    args = parser.parse_args()
+
+    # Build prefix based on args
+    prefix = PREFIX
+    if args.secondary_prefix:
+        prefix = PREFIX + SECONDARY_PREFIX
+
     # Build dataset first to see examples before any tinker stuff
-    dataset_builder = PretrainDatasetBuilder()
+    dataset_builder = PretrainDatasetBuilder(model_name=args.model, prefix=prefix)
     train_dataset, test_dataset = dataset_builder()
 
     # raise ValueError("Dataset built successfully! Remove this line to continue with training.")
 
     config = Config(  # type: ignore[call-arg]
-        model_name=MODEL_NAME,
+        model_name=args.model,
         log_path=LOG_PATH,
         dataset_builder=dataset_builder,
         learning_rate=LEARNING_RATE,
